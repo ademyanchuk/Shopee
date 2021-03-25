@@ -9,3 +9,4 @@ ON_DRIVE_PATH = Path(f"/content/drive/My Drive/Colab Notebooks/{PROJ_NAME}")
 
 LOGS_PATH = PROJ_PATH / "logs"
 MODELS_PATH = PROJ_PATH / "models"
+META_PATH = PROJ_PATH / "meta_data"
