@@ -1,4 +1,5 @@
 from shopee.paths import DATA_ROOT, LOGS_PATH, META_PATH, MODELS_PATH
+from shopee.add_meta_csv import create_meta_csv
 
 
 def create_folders():
@@ -9,6 +10,7 @@ def create_folders():
 
 def main():
     create_folders()
+    create_meta_csv(DATA_ROOT, META_PATH)
 
 
 if __name__ == "__main__":
