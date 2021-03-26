@@ -59,12 +59,12 @@ class ArcFaceNet(nn.Module):
             emb_size=Config["embed_size"], output_classes=num_classes
         )
 
-    def forward(self, x, labels=None):
+    def forward(self, x):
         features = self.backbone(x)
         features = self.bn1(features)
         features = self.dropout(features)
         features = self.fc1(features)
         features = self.bn2(features)
-        if labels is not None:
-            return self.margin(features, labels)
+        if self.training:
+            return self.margin(features)
         return F.normalize(features)
