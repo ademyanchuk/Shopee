@@ -31,6 +31,11 @@ class ShImageDataset(Dataset):
         file_path = self.image_dir / f"{image_id}"
         return file_path
 
+    @property
+    def num_classes(self):
+        if self.labels is not None:
+            return self.labels.nunique()
+
     def __len__(self):
         return len(self.df)
 
