@@ -34,7 +34,7 @@ class ShImageDataset(Dataset):
     @property
     def num_classes(self):
         if self.labels is not None:
-            return self.labels.nunique()
+            return len(np.unique(self.labels))
 
     def __len__(self):
         return len(self.df)
