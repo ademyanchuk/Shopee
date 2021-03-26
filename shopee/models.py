@@ -50,7 +50,7 @@ class ArcFaceNet(nn.Module):
         )
         num_features = self.backbone.num_features
 
-        self.bn1 = nn.BatchNorm2d(num_features)
+        self.bn1 = nn.BatchNorm1d(num_features)
         self.dropout = nn.Dropout2d(Config["drop_rate"], inplace=True)
         self.fc1 = nn.Linear(num_features, Config["embed_size"])
         self.bn2 = nn.BatchNorm1d(Config["embed_size"])
