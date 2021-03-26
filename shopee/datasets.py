@@ -20,8 +20,10 @@ class ShImageDataset(Dataset):
         self.df = df
         self.image_dir = image_dir
         self.image_id_col = image_id_col
-        self.labels = df[target_col].values
         self.is_test = is_test
+        self.labels = None
+        if not is_test:
+            self.labels = df[target_col].values
         self.transform = transform
 
     def _get_img_path(self, idx: int) -> Path:
