@@ -9,10 +9,12 @@ import pandas as pd
 from PIL import Image
 from PIL.Image import Image as PilImage
 from sklearn.model_selection import GroupKFold
+from sklearn.preprocessing import LabelEncoder
 
 
 def create_meta_csv(data_path: Path, dest_path: Path):
     train_df = pd.read_csv(data_path / "train.csv")
+    print("Creating csv file with additional info and folds...")
     # add image sizes
     print("adding image sizes")
     sizes = [
@@ -31,6 +33,16 @@ def create_meta_csv(data_path: Path, dest_path: Path):
     train_df["hamming_median_dist"] = train_df["label_group"].apply(
         lambda x: hamm_medians[x]
     )
+    # add count of postings per group
+    print("adding number of postings per group")
+    tmp = train_df.label_group.value_counts().to_dict()
+    train_df["post_per_group"] = train_df["label_group"].map(tmp)
+
+    # add int encoded label groups
+    print("encoding label groups as integers")
+    le = LabelEncoder()
+    train_df["target"] = le.fit_transform(train_df.label_group)
+
     # add folds
     print("adding folds")
     add_group_kfold(train_df)
