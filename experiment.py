@@ -5,12 +5,13 @@ import argparse
 import logging
 import os
 
-import torch
 import pandas as pd
+import torch
 
 from shopee.config import Config, save_config_yaml
 from shopee.log_utils import get_commit_hash, get_exp_name, setup_logg
-from shopee.paths import MODELS_PATH, LOGS_PATH, META_PATH, DATA_ROOT
+from shopee.paths import DATA_ROOT, LOGS_PATH, META_PATH, MODELS_PATH
+from shopee.train import train_eval_fold
 
 parser = argparse.ArgumentParser(description="Experiment")
 parser.add_argument(
@@ -82,3 +83,21 @@ def main():
     logging.info(f"Using CSV: {META_PATH / args.train_csv}")
 
     full_df = pd.read_csv(META_PATH / args.train_csv)
+    if Config["debug"]:
+        full_df = full_df.sample(n=5000, random_state=Config["seed"]).reset_index(
+            drop=True
+        )
+
+    _ = train_eval_fold(
+        df=full_df,
+        image_dir=DATA_ROOT / "train_images",
+        args=args,
+        Config=Config,
+        exp_name=exp_name,
+        use_amp=True,
+        checkpoint_path=checkpoint_path,
+    )
+
+
+if __name__ == "__main__":
+    main()
