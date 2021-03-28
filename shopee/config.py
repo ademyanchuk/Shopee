@@ -12,7 +12,7 @@ Config = {
     "crop_size": None,  # if none == img_size
     "bs": 32,
     "num_workers": 6,
-    # model bacbone
+    # model
     "arch": "resnet50d",
     "pretrained": True,
     "global_pool": "avg",
@@ -21,11 +21,28 @@ Config = {
     "model_kwargs": {"drop_path_rate": None},
     "bn_momentum": 0.1,  # default 0.1
     "channels_last": False,
+    # ema
+    "model_ema": False,
+    "model_ema_decay": 0.999,
+    "model_ema_force_cpu": False,
     # optimizer
     "opt_conf": {"adam": {"lr": 3e-4, "weight_decay": 0.0}},
+    "sch_conf": {
+        "cosine": {
+            "t_initial": 25,
+            "lr_min": 3e-7,
+            "warmup_t": 1,
+            "warmup_lr_init": 5e-7,
+        }
+    },
     # loss
     "s": 10,  # arcface s scalar
     "m": 0.5,  # arcface margin
+    # train
+    "num_epochs": 3,
+    "save_on": "loss",
+    "accum_grad": 1,
+    "clip_grad": 1.0,  # norm of parameters grad
 }
 
 
