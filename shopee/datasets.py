@@ -6,6 +6,8 @@ import torch
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 
+from .img_augs import make_albu_augs
+
 
 class ShImageDataset(Dataset):
     def __init__(
@@ -60,3 +62,50 @@ class ShImageDataset(Dataset):
         data["label"] = label
 
         return data
+
+
+def init_datasets(
+    Config: dict, train_df: pd.DataFrame, val_df: pd.DataFrame, image_dir: Path
+):
+    train_aug = make_albu_augs(
+        img_size=Config["img_size"], crop_size=Config["crop_size"], mode="train"
+    )
+    val_aug = make_albu_augs(
+        img_size=Config["img_size"], crop_size=Config["crop_size"], mode="val"
+    )
+    train_ds = ShImageDataset(
+        train_df,
+        image_dir,
+        image_id_col=Config["image_id_col"],
+        target_col=Config["target_col"],
+        is_test=False,
+        transform=train_aug,
+    )
+    val_ds = ShImageDataset(
+        val_df,
+        image_dir,
+        image_id_col=Config["image_id_col"],
+        target_col=Config["target_col"],
+        is_test=False,
+        transform=val_aug,
+    )
+    return train_ds, val_ds
+
+
+def init_dataloaders(train_ds: ShImageDataset, val_ds: ShImageDataset, Config: dict):
+    return {
+        "train": DataLoader(
+            train_ds,
+            batch_size=Config["bs"],
+            shuffle=True,
+            num_workers=Config["num_workers"],
+            pin_memory=True,
+        ),
+        "val": DataLoader(
+            val_ds,
+            batch_size=Config["bs"],
+            shuffle=False,
+            num_workers=Config["num_workers"],
+            pin_memory=True,
+        ),
+    }
