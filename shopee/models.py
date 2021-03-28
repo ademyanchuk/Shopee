@@ -48,6 +48,7 @@ class ArcFaceNet(nn.Module):
             bn_momentum=Config["bn_momentum"],
             **Config["model_kwargs"],
         )
+        self.arch = Config["arch"]
         num_features = self.backbone.num_features
 
         self.bn1 = nn.BatchNorm1d(num_features)
@@ -58,6 +59,9 @@ class ArcFaceNet(nn.Module):
         self.margin = ArcFaceLayer(
             emb_size=Config["embed_size"], output_classes=num_classes
         )
+
+    def __repr__(self):
+        return repr(self.__class__.__name__) + f" with backbone: {self.arch}"
 
     def forward(self, x):
         features = self.backbone(x)
