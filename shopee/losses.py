@@ -2,7 +2,7 @@ from torch import nn
 from torch.nn import functional as F
 
 
-class ArchFaceLoss(nn.Module):
+class ArcFaceLoss(nn.Module):
     def __init__(self, num_classes, s=10, m=0.5):
         super().__init__()
         self.num_classes = num_classes
