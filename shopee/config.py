@@ -3,7 +3,7 @@ from pathlib import Path
 import yaml
 
 Config = {
-    "debug": True,
+    "debug": False,
     "seed": 42,
     # data
     "image_id_col": "image",
@@ -31,7 +31,7 @@ Config = {
         "cosine": {
             "t_initial": 3,
             "lr_min": 3e-7,
-            "warmup_t": 1,
+            "warmup_t": 0,
             "warmup_lr_init": 5e-7,
         }
     },
