@@ -3,7 +3,7 @@ import logging
 import os
 import shutil
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -19,6 +19,7 @@ from shopee.amp_scaler import NativeScaler
 from shopee.checkpoint_utils import resume_checkpoint, save_checkpoint
 from shopee.datasets import init_dataloaders, init_datasets
 from shopee.losses import ArcFaceLoss
+from shopee.metric import treshold_finder
 from shopee.models import ArcFaceNet
 from shopee.optimizers import init_optimizer, init_scheduler
 from shopee.paths import LOGS_PATH, MODELS_PATH, ON_DRIVE_PATH
@@ -100,7 +101,7 @@ def train_eval_fold(
         optimizer=optimizer,
         tr_criterion=tr_criterion,
         scheduler=scheduler,
-        metrics_fn=None,
+        metrics_fn=treshold_finder,
         exp_name=f"{exp_name}_f{args.fold}",
         Config=Config,
         use_amp=use_amp,
@@ -119,7 +120,7 @@ def train_model(
     optimizer: optim.Optimizer,
     tr_criterion: nn.Module,
     scheduler: Optional[Any],
-    metrics_fn,  # TODO: add type
+    metrics_fn: Optional[Callable],
     exp_name: str,
     Config: dict,
     use_amp: bool,
@@ -179,11 +180,12 @@ def train_model(
         )
 
         val_score = np.nan
+        th = np.nan
         if metrics_fn is not None:
-            val_score = metrics_fn(val_logits, val_targets)
+            val_score, th = metrics_fn(val_logits, val_targets)
         # Loging train and val results
         logging.info(f"Epoch {epoch} - avg train loss: {train_loss:.4f}")
-        logging.info(f"Epoch {epoch} - avg val score: {val_score:.4f}")
+        logging.info(f"Epoch {epoch} - avg val score: {val_score:.4f}, th: {th:.3f}")
 
         if model_ema is not None and not Config["model_ema_force_cpu"]:
             _, ema_logits, ema_targets = validate_epoch(
@@ -340,7 +342,23 @@ def train_batch(
 def validate_epoch(
     model: nn.Module, dataloader: DataLoader, epoch: int, Config: Any, use_amp: bool,
 ):
-    return np.inf, None, None
+    """We don't compute validation loss here as it has not much sense
+       to check it on data from completly different classes. Instead
+       we validate the competition score and trying to achieve best val score"""
+    epoch_loss = np.inf
+    model.eval()
+    epoch_logits = []
+    epoch_targets = []
+    bar = tqdm(dataloader)
+    for batch in bar:
+        bar.set_description(f"Epoch {epoch} [validation]".ljust(20))
+        batch_logits, batch_targets = validate_batch(batch, model, Config, use_amp)
+        epoch_logits.append(batch_logits)
+        epoch_targets.append(batch_targets)
+    # on epoch end
+    epoch_logits = torch.cat(epoch_logits)
+    epoch_targets = torch.cat(epoch_targets)
+    return epoch_loss, epoch_logits, epoch_targets
 
 
 def validate_batch(
