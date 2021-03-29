@@ -29,7 +29,7 @@ Config = {
     "opt_conf": {"adam": {"lr": 3e-4, "weight_decay": 0.0}},
     "sch_conf": {
         "cosine": {
-            "t_initial": 25,
+            "t_initial": 3,
             "lr_min": 3e-7,
             "warmup_t": 1,
             "warmup_lr_init": 5e-7,
