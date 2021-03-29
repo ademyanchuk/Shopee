@@ -4,14 +4,15 @@
 import argparse
 import logging
 import os
+from shopee.validate_fold import validate_fold
 
 import pandas as pd
 import torch
 
 from shopee.config import Config, save_config_yaml
 from shopee.log_utils import get_commit_hash, get_exp_name, setup_logg
-from shopee.paths import DATA_ROOT, LOGS_PATH, META_PATH, MODELS_PATH
-from shopee.train import train_eval_fold
+from shopee.paths import DATA_ROOT, LOGS_PATH, META_PATH, MODELS_PATH, ON_DRIVE_PATH
+from shopee.train import ON_COLAB, train_eval_fold
 
 parser = argparse.ArgumentParser(description="Experiment")
 parser.add_argument(
@@ -97,6 +98,15 @@ def main():
         use_amp=True,
         checkpoint_path=checkpoint_path,
     )
+
+    # validat fold's result and save predictions dataframe
+    score, pred_df = validate_fold(
+        exp_name, args.fold, Config, full_df, DATA_ROOT / "train_images"
+    )
+    logging.info(f"validation for fold: {args.fold}, score: {score}")
+    if ON_COLAB:
+        save_path = ON_DRIVE_PATH / "preds" / f"{exp_name}_f{args.fold}.csv"
+        pred_df.to_csv(save_path, index=False, header=True)
 
 
 if __name__ == "__main__":
