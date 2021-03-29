@@ -1,0 +1,76 @@
+Experiment: exp_29-03-2021-10-34
+Training with a single process on 1 GPUs.
+Git commit hash: 2dd6126
+Using CSV: /root/Projects/Shopee/meta_data/train_folds.csv
+NumExpr defaulting to 4 threads.
+Data: train size: 27399, val_size: 6851
+Model 'ArcFaceNet' with backbone: resnet50d created, param count: 30_220_640
+Using optimizer: AdamW (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    eps: 1e-08
+    lr: 0.0003
+    weight_decay: 0.0
+)
+AMP: 'NativeScaler'
+Epoch 0 - avg train loss: 13.4581
+Epoch 0 - avg val score: 0.5674, th: 0.990
+epoch step: lr: 0.0003
+Epoch 0 - Save @ score: 0.5674
+Epoch 1 - avg train loss: 12.1608
+Epoch 1 - avg val score: 0.5854, th: 0.970
+epoch step: lr: 0.0003
+Epoch 1 - Save @ score: 0.5854
+Epoch 2 - avg train loss: 11.1622
+Epoch 2 - avg val score: 0.6000, th: 0.960
+epoch step: lr: 0.0003
+Epoch 2 - Save @ score: 0.6000
+Epoch 3 - avg train loss: 10.2926
+Epoch 3 - avg val score: 0.6130, th: 0.940
+epoch step: lr: 0.0003
+Epoch 3 - Save @ score: 0.6130
+Epoch 4 - avg train loss: 9.5634
+Epoch 4 - avg val score: 0.6196, th: 0.910
+epoch step: lr: 0.0003
+Epoch 4 - Save @ score: 0.6196
+Epoch 5 - avg train loss: 8.9654
+Epoch 5 - avg val score: 0.6270, th: 0.910
+epoch step: lr: 0.0002
+Epoch 5 - Save @ score: 0.6270
+Epoch 6 - avg train loss: 8.4656
+Epoch 6 - avg val score: 0.6352, th: 0.900
+epoch step: lr: 0.0002
+Epoch 6 - Save @ score: 0.6352
+Epoch 7 - avg train loss: 8.0468
+Epoch 7 - avg val score: 0.6430, th: 0.880
+epoch step: lr: 0.0002
+Epoch 7 - Save @ score: 0.6430
+Epoch 8 - avg train loss: 7.7206
+Epoch 8 - avg val score: 0.6481, th: 0.870
+epoch step: lr: 0.0001
+Epoch 8 - Save @ score: 0.6481
+Epoch 9 - avg train loss: 7.4544
+Epoch 9 - avg val score: 0.6505, th: 0.870
+epoch step: lr: 0.0001
+Epoch 9 - Save @ score: 0.6505
+Epoch 10 - avg train loss: 7.2381
+Epoch 10 - avg val score: 0.6538, th: 0.860
+epoch step: lr: 0.0001
+Epoch 10 - Save @ score: 0.6538
+Epoch 11 - avg train loss: 7.0562
+Epoch 11 - avg val score: 0.6574, th: 0.850
+epoch step: lr: 0.0000
+Epoch 11 - Save @ score: 0.6574
+Epoch 12 - avg train loss: 6.9060
+Epoch 12 - avg val score: 0.6595, th: 0.840
+epoch step: lr: 0.0000
+Epoch 12 - Save @ score: 0.6595
+Epoch 13 - avg train loss: 6.8105
+Epoch 13 - avg val score: 0.6615, th: 0.840
+epoch step: lr: 0.0000
+Epoch 13 - Save @ score: 0.6615
+Epoch 14 - avg train loss: 6.7444
+Epoch 14 - avg val score: 0.6616, th: 0.850
+epoch step: lr: 0.0000
+Epoch 14 - Save @ score: 0.6616
