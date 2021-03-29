@@ -68,7 +68,7 @@ def train_eval_fold(
     resume_loss = None
     resume_score = None
     if checkpoint_path:
-        resume_epoch, resume_loss, resume_score = resume_checkpoint(
+        resume_epoch, resume_loss, resume_score, _ = resume_checkpoint(
             model, checkpoint_path, optimizer=optimizer, loss_scaler=amp_scaler,
         )
 
@@ -148,6 +148,7 @@ def train_model(
         "train_loss": np.inf,
         "val_loss": np.inf,
         "val_score": -np.inf,
+        "threshold": 1.0,
     }
     epoch_metrics["exp"] = exp_name
     df_columns = list(epoch_metrics.keys())
@@ -207,6 +208,7 @@ def train_model(
         epoch_metrics["train_loss"] = train_loss
         epoch_metrics["val_loss"] = val_loss
         epoch_metrics["val_score"] = val_score
+        epoch_metrics["threshold"] = th
 
         # write epoch raw to experiment dataframe
         epoch_raw = get_epoch_raw(epoch_metrics)
