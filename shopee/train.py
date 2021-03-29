@@ -132,13 +132,13 @@ def train_model(
 ) -> Optional[float]:
     """Train, validate, collect metrics, and save checkpoint"""
 
-    save_on = Config["save_on"]
-    assert save_on in [
+    return_best = Config["return_best"]
+    assert return_best in [
         "loss",
         "score",
-    ], f"Only [loss, score] modes allowed, {save_on} provided"
+    ], f"Only [loss, score] modes allowed, {return_best} provided"
 
-    if save_on == "score":
+    if return_best == "score":
         assert metrics_fn is not None, "Provide metric function"
 
     # Initialize function-level state
@@ -199,7 +199,7 @@ def train_model(
 
         # lr scheduler step
         if scheduler is not None:
-            scheduler.step(epoch + 1)
+            scheduler.step(epoch)
         logging.info(
             f"epoch step: lr: {optimizer.param_groups[0]['lr']}, initial lr: {optimizer.param_groups[0]['initial_lr']}"
         )
@@ -252,9 +252,9 @@ def train_model(
                 shutil.copy(
                     MODELS_PATH / f"{exp_name}_score.pth", ON_DRIVE_PATH / "all_models"
                 )
-    if save_on == "loss":
+    if return_best == "loss":
         return best_loss
-    if save_on == "score":
+    if return_best == "score":
         return best_score
 
 
