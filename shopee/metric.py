@@ -1,6 +1,4 @@
 """https://www.kaggle.com/c/shopee-product-matching/discussion/228424"""
-
-import matplotlib.pyplot as plt
 import numpy as np
 from torch.nn import functional as F
 
@@ -26,7 +24,4 @@ def treshold_finder(embs, y, start=0.7, end=1, step=0.01):
     for t in ts:
         scores.append(score_groups(sims > t, target_matrix))
     best = np.array(scores).argmax()
-    plt.title(f"Best is {scores[best]:.3f} at {ts[best]:.3f}")
-    plt.plot(ts, scores)
-    plt.show()
     return scores[best], ts[best]
