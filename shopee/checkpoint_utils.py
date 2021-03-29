@@ -26,6 +26,7 @@ def save_checkpoint(
         "optimizer": optimizer.state_dict(),
         "val_loss": epoch_metrics["val_loss"],
         "val_score": epoch_metrics["val_score"],
+        "threshold": epoch_metrics["threshold"],
     }
     if model_ema is not None:
         save_state["state_dict_ema"] = get_state_dict(model_ema, unwrap_model)
@@ -45,6 +46,7 @@ def resume_checkpoint(
     resume_epoch = None
     best_loss = None
     best_score = None
+    threshold = None
     checkpoint = torch.load(checkpoint_path, map_location="cpu")
     if isinstance(checkpoint, dict) and "state_dict" in checkpoint:
         if log_info:
@@ -71,6 +73,8 @@ def resume_checkpoint(
             best_loss = checkpoint["val_loss"]
         if "val_score" in checkpoint:
             best_score = checkpoint["val_score"]
+        if "threshold" in checkpoint:
+            threshold = checkpoint["threshold"]
 
         if log_info:
             logging.info(
@@ -82,4 +86,4 @@ def resume_checkpoint(
         model.load_state_dict(checkpoint)
         if log_info:
             logging.info("Loaded checkpoint '{}'".format(checkpoint_path))
-    return resume_epoch, best_loss, best_score
+    return resume_epoch, best_loss, best_score, threshold
