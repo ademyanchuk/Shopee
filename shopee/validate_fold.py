@@ -26,7 +26,11 @@ def validate_fold(
     if Config["channels_last"]:
         model = model.to(memory_format=torch.channels_last)
     checkpoint_path = MODELS_PATH / f"{exp_name}_f{fold}_score.pth"
-    _, _, _, th = resume_checkpoint(model, checkpoint_path)
-    _, embeds, _ = validate_epoch(model, dataloaders["val"], 0, Config, use_amp=True)
+    epoch, _, _, th = resume_checkpoint(model, checkpoint_path)
+    assert isinstance(epoch, int)
+    assert isinstance(th, float)
+    _, embeds, _ = validate_epoch(
+        model, dataloaders["val"], epoch, Config, use_amp=True
+    )
     score, pred_df = validate_score(val_df, embeds, th)
     return score, pred_df
