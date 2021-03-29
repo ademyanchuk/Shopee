@@ -10,8 +10,8 @@ Config = {
     "target_col": "target",
     "img_size": 384,  # resize
     "crop_size": None,  # if none == img_size
-    "bs": 32,
-    "num_workers": 6,
+    "bs": 64,
+    "num_workers": 4,
     # model
     "arch": "resnet50d",
     "pretrained": True,
@@ -40,7 +40,7 @@ Config = {
     "m": 0.5,  # arcface margin
     # train
     "num_epochs": 3,
-    "save_on": "loss",
+    "return_best": "score",
     "accum_grad": 1,
     "clip_grad": 1.0,  # norm of parameters grad
 }
