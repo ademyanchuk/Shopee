@@ -200,9 +200,7 @@ def train_model(
         # lr scheduler step
         if scheduler is not None:
             scheduler.step(epoch)
-        logging.info(
-            f"epoch step: lr: {optimizer.param_groups[0]['lr']}, initial lr: {optimizer.param_groups[0]['initial_lr']}"
-        )
+            logging.info(f"epoch step: lr: {optimizer.param_groups[0]['lr']:.4f}")
 
         # update metrics dict
         epoch_metrics["epoch"] = epoch
