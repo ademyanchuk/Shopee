@@ -47,8 +47,8 @@ def train_eval_fold(
     dataloaders = init_dataloaders(train_ds, val_ds, Config)
     logging.info(f"Data: train size: {len(train_ds)}, val_size: {len(val_ds)}")
 
-    assert train_ds.num_classes is not None
-    model = ArcFaceNet(train_ds.num_classes, Config)
+    num_classes = int(train_df[Config["target_col"]].max() + 1)
+    model = ArcFaceNet(num_classes, Config)
     logging.info(
         f"Model {model} created, param count: {sum([m.numel() for m in model.parameters()]):_}"
     )
@@ -92,7 +92,7 @@ def train_eval_fold(
             initial lr -{optimizer.param_groups[0]['initial_lr']}"""
         )
     # Define loss function (no sense to check val loss in ArcFace setting with new groups)
-    tr_criterion = ArcFaceLoss(train_ds.num_classes, s=Config["s"], m=Config["m"])
+    tr_criterion = ArcFaceLoss(num_classes, s=Config["s"], m=Config["m"])
 
     result = train_model(
         model=model,
