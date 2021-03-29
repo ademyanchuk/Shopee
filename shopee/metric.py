@@ -50,9 +50,10 @@ def row_wise_f1_score(labels, preds):
     return scores, np.mean(scores)
 
 
-def validate_score(df, embeeds):
+def validate_score(df, embeeds, th):
     sims = emb_sim(embeeds)
     sims = sims.cpu().numpy()
+    sims = sims > th
     add_ground_truth(df)
     add_predictions(df, sims)
     scores, f1mean = row_wise_f1_score(df["true_postings"], df["pred_postings"])
