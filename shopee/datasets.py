@@ -92,6 +92,20 @@ def init_datasets(
     return train_ds, val_ds
 
 
+def init_test_dataset(Config: dict, df: pd.DataFrame, image_dir: Path):
+    test_aug = make_albu_augs(
+        img_size=Config["img_size"], crop_size=Config["crop_size"], mode="test"
+    )
+    return ShImageDataset(
+        df=df,
+        image_dir=image_dir,
+        image_id_col=Config["image_id_col"],
+        target_col="",
+        is_test=True,
+        transform=test_aug,
+    )
+
+
 def init_dataloaders(train_ds: ShImageDataset, val_ds: ShImageDataset, Config: dict):
     return {
         "train": DataLoader(
