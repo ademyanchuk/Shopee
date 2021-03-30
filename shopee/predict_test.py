@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 
 import pandas as pd
 import torch
@@ -21,6 +22,7 @@ def predict_one_model(
     image_dir: Path,
     model_dir: Path,
     conf_dir: Path,
+    threshold: Optional[float] = None,
 ):
     with open(conf_dir / f"{exp_name}_conf.yaml", "r") as f:
         Config = yaml.safe_load(f)
@@ -44,9 +46,11 @@ def predict_one_model(
     assert isinstance(th, float)
     emb_list, emb_tensor = test_epoch(model, test_dl, epoch, Config, use_amp=True)
     # matching
+    if threshold is None:
+        threshold = th
     matches = []
     for batch in tqdm(emb_list):
-        selection = ((batch @ emb_tensor.T) > th).cpu().numpy()
+        selection = ((batch @ emb_tensor.T) > threshold).cpu().numpy()
         for row in selection:
             matches.append(" ".join(df.iloc[row].posting_id.tolist()))
     df["matches"] = matches
