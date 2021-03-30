@@ -2,15 +2,16 @@ from pathlib import Path
 
 import pandas as pd
 import torch
-from torch.utils.data import DataLoader
 import yaml
+from torch.cuda.amp import autocast
+from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 from .checkpoint_utils import resume_checkpoint
 from .datasets import init_test_dataset
 from .metric import make_submit_df
 from .models import ArcFaceNet
 from .paths import LOGS_PATH
-from .train import validate_epoch
 
 FOLD_NUM_CLASSES = {0: 11014, 1: 11014, 2: 11013, 3: 11014, 4: 11014}
 
@@ -38,8 +39,35 @@ def predict_one_model(
     epoch, _, _, th = resume_checkpoint(model, checkpoint_path)
     assert isinstance(epoch, int)
     assert isinstance(th, float)
-    _, embeds, _ = validate_epoch(
-        model, test_dl, epoch, Config, use_amp=True
-    )
+    embeds = test_epoch(model, test_dl, epoch, Config, use_amp=True)
     submit_df = make_submit_df(df, embeds, th)
     return submit_df
+
+
+def test_epoch(model, dataloader, epoch, Config, use_amp):
+    model.eval()
+    epoch_logits = []
+    bar = tqdm(dataloader)
+    for batch in bar:
+        bar.set_description(f"Epoch {epoch} [validation]".ljust(20))
+        batch_logits = test_batch(batch, model, Config, use_amp)
+        epoch_logits.append(batch_logits)
+    # on epoch end
+    epoch_logits = torch.cat(epoch_logits)
+    return epoch_logits
+
+
+def test_batch(
+    batch, model, Config, use_amp,
+):
+    """
+    It returns also detached to cpu output tensor
+    and targets tensor
+    """
+    inputs = batch["image"].cuda()
+    if Config["channels_last"]:
+        inputs = inputs.contiguous(memory_format=torch.channels_last)
+    with torch.no_grad():
+        with autocast(enabled=use_amp):
+            outputs = model(inputs)
+    return outputs
