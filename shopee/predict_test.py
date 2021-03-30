@@ -9,7 +9,6 @@ from tqdm import tqdm
 
 from .checkpoint_utils import resume_checkpoint
 from .datasets import init_test_dataset
-from .metric import make_submit_df
 from .models import ArcFaceNet
 
 FOLD_NUM_CLASSES = {0: 11014, 1: 11014, 2: 11013, 3: 11014, 4: 11014}
@@ -43,9 +42,15 @@ def predict_one_model(
     epoch, _, _, th = resume_checkpoint(model, checkpoint_path)
     assert isinstance(epoch, int)
     assert isinstance(th, float)
-    embeds = test_epoch(model, test_dl, epoch, Config, use_amp=True)
-    submit_df = make_submit_df(df, embeds, th)
-    return submit_df
+    emb_list, emb_tensor = test_epoch(model, test_dl, epoch, Config, use_amp=True)
+    # matching
+    matches = []
+    for batch in tqdm(emb_list):
+        selection = ((batch @ emb_tensor.T) > th).cpu().numpy()
+        for row in selection:
+            matches.append(" ".join(df.iloc[row].posting_id.tolist()))
+    df["matches"] = matches
+    return df
 
 
 def test_epoch(model, dataloader, epoch, Config, use_amp):
@@ -57,8 +62,7 @@ def test_epoch(model, dataloader, epoch, Config, use_amp):
         batch_logits = test_batch(batch, model, Config, use_amp)
         epoch_logits.append(batch_logits)
     # on epoch end
-    epoch_logits = torch.cat(epoch_logits)
-    return epoch_logits
+    return epoch_logits, torch.cat(epoch_logits)
 
 
 def test_batch(
