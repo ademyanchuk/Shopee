@@ -49,7 +49,7 @@ def train_eval_fold(
     logging.info(f"Data: train size: {len(train_ds)}, val_size: {len(val_ds)}")
 
     num_classes = int(train_df[Config["target_col"]].max() + 1)
-    model = ArcFaceNet(num_classes, Config)
+    model = ArcFaceNet(num_classes, Config, pretrained=True)
     logging.info(
         f"Model {model} created, param count: {sum([m.numel() for m in model.parameters()]):_}"
     )

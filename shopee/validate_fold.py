@@ -21,7 +21,7 @@ def validate_fold(
     dataloaders = init_dataloaders(train_ds, val_ds, Config)
     num_classes = int(train_df[Config["target_col"]].max() + 1)
 
-    model = ArcFaceNet(num_classes, Config)
+    model = ArcFaceNet(num_classes, Config, pretrained=False)
     model.cuda()
     if Config["channels_last"]:
         model = model.to(memory_format=torch.channels_last)
