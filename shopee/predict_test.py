@@ -12,7 +12,7 @@ from .models import ArcFaceNet
 from .paths import LOGS_PATH
 from .train import validate_epoch
 
-FOLD_NUM_CLASSES = {0: 11013, 1: 11012, 2: 11014, 3: 11011, 4: 11009}
+FOLD_NUM_CLASSES = {0: 11014, 1: 11014, 2: 11013, 3: 11014, 4: 11014}
 
 
 def predict_one_model(
