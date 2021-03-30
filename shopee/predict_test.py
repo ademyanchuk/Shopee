@@ -11,15 +11,19 @@ from .checkpoint_utils import resume_checkpoint
 from .datasets import init_test_dataset
 from .metric import make_submit_df
 from .models import ArcFaceNet
-from .paths import LOGS_PATH
 
 FOLD_NUM_CLASSES = {0: 11014, 1: 11014, 2: 11013, 3: 11014, 4: 11014}
 
 
 def predict_one_model(
-    exp_name: str, on_fold: int, df: pd.DataFrame, image_dir: Path, model_dir: Path
+    exp_name: str,
+    on_fold: int,
+    df: pd.DataFrame,
+    image_dir: Path,
+    model_dir: Path,
+    conf_dir: Path,
 ):
-    with open(LOGS_PATH / f"{exp_name}_conf.yaml", "r") as f:
+    with open(conf_dir / f"{exp_name}_conf.yaml", "r") as f:
         Config = yaml.safe_load(f)
     test_ds = init_test_dataset(Config, df, image_dir)
     test_dl = DataLoader(
