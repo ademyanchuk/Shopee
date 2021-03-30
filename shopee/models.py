@@ -35,14 +35,12 @@ class ArcFaceLayer(nn.Module):
 
 
 class ArcFaceNet(nn.Module):
-    def __init__(
-        self, num_classes: int, Config: dict,
-    ):
+    def __init__(self, num_classes: int, Config: dict, pretrained: bool):
         super(ArcFaceNet, self).__init__()
         self.backbone = timm_backbone(
             f_out=0,
             arch=Config["arch"],
-            pretrained=False,
+            pretrained=pretrained,
             global_pool=Config["global_pool"],
             drop_rate=Config["drop_rate"],
             bn_momentum=Config["bn_momentum"],
