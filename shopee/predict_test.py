@@ -1,12 +1,15 @@
 from pathlib import Path
 from typing import Optional
 
+import numpy as np
 import pandas as pd
 import torch
 import yaml
 from torch.cuda.amp import autocast
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+
+from shopee.metric import compute_thres, get_sim_stats
 
 from .checkpoint_utils import resume_checkpoint
 from .datasets import init_test_dataset
@@ -48,9 +51,18 @@ def predict_one_model(
     # matching
     if threshold is None:
         threshold = th
-    matches = []
+    stats = []
     for batch in tqdm(emb_list):
-        selection = ((batch @ emb_tensor.T) > threshold).cpu().numpy()
+        selection = (batch @ emb_tensor.T).cpu().numpy()
+        batch_stats = get_sim_stats(selection)
+        stats.append(batch_stats)
+    quants = np.quantile(np.concatenate(stats), q=[0.3, 0.6, 0.9])
+    matches = []
+    for batch, stat in zip(emb_list, stats):
+        threshold = pd.Series(stat).apply(lambda x: compute_thres(x, quants))
+        threshold = threshold[:, None]
+        batch_sims = (batch @ emb_tensor.T).cpu().numpy()
+        selection = batch_sims > threshold
         for row in selection:
             matches.append(" ".join(df.iloc[row].posting_id.tolist()))
     df["matches"] = matches
