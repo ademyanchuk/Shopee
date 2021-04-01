@@ -50,9 +50,24 @@ def row_wise_f1_score(labels, preds):
     return scores, np.mean(scores)
 
 
+def get_sim_stats(sims):
+    best25_mean, best25_var, best25_std = [], [], []
+    for sim in sims:
+        best25_ids = np.argsort(sim)[-25:]
+        best25_mean.append(np.mean(sim[best25_ids]))
+        best25_var.append(np.var(sim[best25_ids]))
+        best25_std.append(np.std(sim[best25_ids]))
+    return best25_mean, best25_var, best25_std
+
+
 def validate_score(df, embeeds, th):
     sims = emb_sim(embeeds)
     sims = sims.cpu().numpy()
+    # add some similarity scores statistics before thresholding
+    best25_mean, best25_var, best25_std = get_sim_stats(sims)
+    df["best25_mean"] = best25_mean
+    df["best25_var"] = best25_var
+    df["best25_std"] = best25_std
     sims = sims > th
     add_ground_truth(df)
     add_predictions(df, sims)
