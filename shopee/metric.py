@@ -53,7 +53,7 @@ def row_wise_f1_score(labels, preds):
 def get_sim_stats(sims):
     best25_mean, best25_var, best25_std = [], [], []
     for sim in sims:
-        best25_ids = np.argsort(sim)[-25:]
+        best25_ids = np.argsort(sim)[-10:]
         best25_mean.append(np.mean(sim[best25_ids]))
         best25_var.append(np.var(sim[best25_ids]))
         best25_std.append(np.std(sim[best25_ids]))
@@ -62,9 +62,9 @@ def get_sim_stats(sims):
 
 def compute_thres(mean_sim, std_sim, var_sim, var_q50):
     if var_sim < var_q50:
-        th = mean_sim - 0.5 * std_sim
+        th = mean_sim - 0.1 * std_sim
     else:
-        th = mean_sim - std_sim
+        th = mean_sim - 0.5 * std_sim
     return th
 
 
