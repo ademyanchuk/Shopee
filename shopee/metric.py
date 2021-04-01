@@ -51,38 +51,30 @@ def row_wise_f1_score(labels, preds):
 
 
 def get_sim_stats(sims):
-    best25_mean, best25_var, best25_std = [], [], []
+    best25_mean = []
     for sim in sims:
         best25_ids = np.argsort(sim)[-10:]
         best25_mean.append(np.mean(sim[best25_ids]))
-        best25_var.append(np.var(sim[best25_ids]))
-        best25_std.append(np.std(sim[best25_ids]))
-    return best25_mean, best25_var, best25_std
+    return best25_mean
 
 
-def compute_thres(mean_sim, std_sim, var_sim, var_q50):
-    if var_sim < var_q50:
-        th = mean_sim - 0.1 * std_sim
+def compute_thres(mean_sim, qunts):
+    if mean_sim <= qunts[0]:
+        return qunts[0]
+    elif mean_sim > qunts[0] and mean_sim <= qunts[1]:
+        return qunts[1]
     else:
-        th = mean_sim - 0.5 * std_sim
-    return th
+        return qunts[2]
 
 
 def validate_score(df, embeeds, th):
     sims = emb_sim(embeeds)
     sims = sims.cpu().numpy()
     # add some similarity scores statistics before thresholding
-    best25_mean, best25_var, best25_std = get_sim_stats(sims)
+    best25_mean = get_sim_stats(sims)
     df["best25_mean"] = best25_mean
-    df["best25_var"] = best25_var
-    df["best25_std"] = best25_std
-    var_q50 = np.quantile(df.best25_var, q=0.5)
-    th = df.apply(
-        lambda x: compute_thres(
-            x["best25_mean"], x["best25_std"], x["best25_var"], var_q50
-        ),
-        axis=1,
-    )
+    qunts = np.quantile(df.best25_mean, q=[0.3, 0.6, 0.9])
+    th = df.apply(lambda x: compute_thres(x["best25_mean"], qunts), axis=1,)
     th = th.values[:, None]
     sims = sims > th
     add_ground_truth(df)
