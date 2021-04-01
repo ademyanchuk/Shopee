@@ -8,12 +8,12 @@ Config = {
     # data
     "image_id_col": "image",
     "target_col": "target",
-    "img_size": 384,  # resize
+    "img_size": 512,  # resize
     "crop_size": None,  # if none == img_size
-    "bs": 64,
+    "bs": 32,
     "num_workers": 4,
     # model
-    "arch": "resnet50d",
+    "arch": "resnet152d",
     "pretrained": True,
     "global_pool": "avg",
     "embed_size": 512,
@@ -26,11 +26,11 @@ Config = {
     "model_ema_decay": 0.999,
     "model_ema_force_cpu": False,
     # optimizer
-    "opt_conf": {"adam": {"lr": 1e-3, "weight_decay": 0.0}},
+    "opt_conf": {"adam": {"lr": 5e-4, "weight_decay": 0.0}},
     "sch_conf": {
         "cosine": {
             "t_initial": 20,
-            "lr_min": 3e-7,
+            "lr_min": 5e-8,
             "warmup_t": 1,
             "warmup_lr_init": 5e-7,
         }
