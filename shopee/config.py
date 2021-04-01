@@ -13,7 +13,7 @@ Config = {
     "bs": 32,
     "num_workers": 4,
     # model
-    "arch": "resnet152d",
+    "arch": "resnet101d",
     "pretrained": True,
     "global_pool": "avg",
     "embed_size": 512,
