@@ -60,7 +60,7 @@ def predict_one_model(
     matches = []
     for batch, stat in zip(emb_list, stats):
         threshold = pd.Series(stat).apply(lambda x: compute_thres(x, quants))
-        threshold = threshold[:, None]
+        threshold = threshold.values[:, None]
         batch_sims = (batch @ emb_tensor.T).cpu().numpy()
         selection = batch_sims > threshold
         for row in selection:
