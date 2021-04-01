@@ -60,6 +60,14 @@ def get_sim_stats(sims):
     return best25_mean, best25_var, best25_std
 
 
+def compute_thres(mean_sim, std_sim, var_sim, var_q50):
+    if var_sim < var_q50:
+        th = mean_sim - 0.5 * std_sim
+    else:
+        th = mean_sim - std_sim
+    return th
+
+
 def validate_score(df, embeeds, th):
     sims = emb_sim(embeeds)
     sims = sims.cpu().numpy()
@@ -68,6 +76,14 @@ def validate_score(df, embeeds, th):
     df["best25_mean"] = best25_mean
     df["best25_var"] = best25_var
     df["best25_std"] = best25_std
+    var_q50 = np.quantile(df.best25_var, q=0.5)
+    th = df.apply(
+        lambda x: compute_thres(
+            x["best25_mean"], x["best25_std"], x["best25_var"], var_q50
+        ),
+        axis=1,
+    )
+    th = th.values[:, None]
     sims = sims > th
     add_ground_truth(df)
     add_predictions(df, sims)
