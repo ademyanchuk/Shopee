@@ -1,5 +1,7 @@
 """https://www.kaggle.com/c/shopee-product-matching/discussion/228424"""
 import numpy as np
+import pandas as pd
+import torch
 from torch.nn import functional as F
 
 
@@ -25,6 +27,17 @@ def treshold_finder(embs, y, start=0.7, end=1, step=0.01):
         scores.append(score_groups(sims > t, target_matrix))
     best = np.array(scores).argmax()
     return scores[best], ts[best]
+
+
+def binned_threshold_f1(embs: torch.Tensor, y: torch.Tensor):
+    sims = emb_sim(embs)
+    target_matrix = y[:, None] == y[None, :]
+    sim_stats = get_sim_stats_torch(sims)
+    quants = torch.quantile(sim_stats, q=torch.tensor([0.3, 0.6, 0.9]))
+    th = torch.stack([compute_thres(x, quants) for x in sim_stats])
+    th = th[:, None].cuda()
+    score = score_groups(sims > th, target_matrix)
+    return score.item(), np.nan
 
 
 # predictions to dataframe
@@ -56,6 +69,14 @@ def get_sim_stats(sims):
         best25_ids = np.argsort(sim)[-10:]
         best25_mean.append(np.mean(sim[best25_ids]))
     return best25_mean
+
+
+def get_sim_stats_torch(sims: torch.Tensor):
+    best_mean = []
+    for sim in sims:
+        best_ids = torch.argsort(sim)[-10:]
+        best_mean.append(torch.mean(sim[best_ids]))
+    return torch.tensor(best_mean)
 
 
 def compute_thres(mean_sim, qunts):
