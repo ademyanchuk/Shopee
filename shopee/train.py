@@ -19,7 +19,7 @@ from shopee.amp_scaler import NativeScaler
 from shopee.checkpoint_utils import resume_checkpoint, save_checkpoint
 from shopee.datasets import init_dataloaders, init_datasets
 from shopee.losses import ArcFaceLoss
-from shopee.metric import treshold_finder
+from shopee.metric import binned_threshold_f1, treshold_finder
 from shopee.models import ArcFaceNet
 from shopee.optimizers import init_optimizer, init_scheduler
 from shopee.paths import LOGS_PATH, MODELS_PATH, ON_DRIVE_PATH
@@ -101,7 +101,7 @@ def train_eval_fold(
         optimizer=optimizer,
         tr_criterion=tr_criterion,
         scheduler=scheduler,
-        metrics_fn=treshold_finder,
+        metrics_fn=binned_threshold_f1,
         exp_name=f"{exp_name}_f{args.fold}",
         Config=Config,
         use_amp=use_amp,
