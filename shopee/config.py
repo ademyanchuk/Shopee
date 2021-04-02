@@ -36,8 +36,8 @@ Config = {
         }
     },
     # loss
-    "s": 10,  # arcface s scalar
-    "m": 0.5,  # arcface margin
+    "s": 30,  # arcface s scalar
+    "m": 0.7,  # arcface margin
     # train
     "num_epochs": 25,
     "return_best": "score",
