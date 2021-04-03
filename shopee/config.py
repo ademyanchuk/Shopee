@@ -36,7 +36,7 @@ Config = {
         }
     },
     # loss
-    "s": 30,  # arcface s scalar
+    "s": 15,  # arcface s scalar
     "m": 0.5,  # arcface margin
     # train
     "num_epochs": 20,
