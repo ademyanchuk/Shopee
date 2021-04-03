@@ -101,7 +101,7 @@ def train_eval_fold(
         optimizer=optimizer,
         tr_criterion=tr_criterion,
         scheduler=scheduler,
-        metrics_fn=binned_threshold_f1,
+        metrics_fn=treshold_finder,
         exp_name=f"{exp_name}_f{args.fold}",
         Config=Config,
         use_amp=use_amp,
