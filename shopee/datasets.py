@@ -1,4 +1,5 @@
 from pathlib import Path
+from shopee.rand_aug import make_aug
 
 import numpy as np
 import pandas as pd
@@ -64,15 +65,39 @@ class ShImageDataset(Dataset):
         return data
 
 
+def init_augs(Config: dict):
+    aug_type = Config["aug_type"]
+    if aug_type == "albu":
+        train_aug = make_albu_augs(
+            img_size=Config["img_size"], crop_size=Config["crop_size"], mode="train"
+        )
+        val_aug = make_albu_augs(
+            img_size=Config["img_size"], crop_size=Config["crop_size"], mode="val"
+        )
+    elif aug_type == "rand":
+        train_aug = make_aug(
+            img_size=Config["img_size"],
+            crop_size=Config["crop_size"],
+            starategy="rand",
+            mode="train",
+            severity=Config["rand_aug_severity"],
+            width=Config["rand_aug_width"],
+        )
+        val_aug = make_aug(
+            img_size=Config["img_size"],
+            crop_size=Config["crop_size"],
+            starategy="rand",
+            mode="val",
+        )
+    else:
+        raise NotImplementedError
+    return train_aug, val_aug
+
+
 def init_datasets(
     Config: dict, train_df: pd.DataFrame, val_df: pd.DataFrame, image_dir: Path
 ):
-    train_aug = make_albu_augs(
-        img_size=Config["img_size"], crop_size=Config["crop_size"], mode="train"
-    )
-    val_aug = make_albu_augs(
-        img_size=Config["img_size"], crop_size=Config["crop_size"], mode="val"
-    )
+    train_aug, val_aug = init_augs(Config)
     train_ds = ShImageDataset(
         train_df,
         image_dir,
