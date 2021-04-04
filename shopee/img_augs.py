@@ -23,24 +23,24 @@ def make_albu_augs(img_size: int, crop_size: Optional[int], mode: str):
                 A.RandomBrightnessContrast(
                     brightness_limit=(-0.2, 0.2), contrast_limit=(-0.2, 0.2), p=0.7
                 ),
-                # A.CLAHE(clip_limit=(1, 4), p=0.5),
-                # A.OneOf(
-                #     [
-                #         A.OpticalDistortion(distort_limit=1.0),
-                #         A.GridDistortion(num_steps=5, distort_limit=1.0),
-                #         A.ElasticTransform(alpha=3),
-                #     ],
-                #     p=0.2,
-                # ),
-                # A.OneOf(
-                #     [
-                #         A.GaussNoise(var_limit=[10, 50]),
-                #         A.GaussianBlur(),
-                #         A.MotionBlur(),
-                #         A.MedianBlur(),
-                #     ],
-                #     p=0.2,
-                # ),
+                A.CLAHE(clip_limit=(1, 4), p=0.5),
+                A.OneOf(
+                    [
+                        A.OpticalDistortion(distort_limit=1.0),
+                        A.GridDistortion(num_steps=5, distort_limit=1.0),
+                        A.ElasticTransform(alpha=3),
+                    ],
+                    p=0.4,
+                ),
+                A.OneOf(
+                    [
+                        A.GaussNoise(var_limit=[10, 50]),
+                        A.GaussianBlur(),
+                        A.MotionBlur(),
+                        A.MedianBlur(),
+                    ],
+                    p=0.4,
+                ),
                 A.Cutout(
                     max_h_size=int(crop_size * 0.075),
                     max_w_size=int(crop_size * 0.075),
