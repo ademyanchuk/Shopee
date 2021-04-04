@@ -39,6 +39,9 @@ Config = {
     "s": 15,  # arcface s scalar
     "m": 0.5,  # arcface margin
     # train
+    "aug_type": "rand",
+    "rand_aug_severity": 6,
+    "rand_aug_width": 6,
     "num_epochs": 20,
     "return_best": "score",
     "accum_grad": 1,
