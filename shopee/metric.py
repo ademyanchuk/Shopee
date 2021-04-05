@@ -79,13 +79,13 @@ def get_sim_stats_torch(sims: torch.Tensor):
     return torch.tensor(best_mean)
 
 
-def compute_thres(mean_sim, qunts):
+def compute_thres(mean_sim, qunts, coeff=0.95):
     if mean_sim <= qunts[0]:
-        return qunts[0]
+        return qunts[0] * coeff
     elif mean_sim > qunts[0] and mean_sim <= qunts[1]:
-        return qunts[1]
+        return qunts[1] * coeff
     else:
-        return qunts[2]
+        return qunts[2] * coeff
 
 
 def validate_score(df, embeeds, th):
