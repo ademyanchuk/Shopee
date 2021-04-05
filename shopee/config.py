@@ -36,12 +36,12 @@ Config = {
         }
     },
     # loss
-    "s": 15,  # arcface s scalar
-    "m": 0.5,  # arcface margin
+    "s": 30,  # arcface s scalar
+    "m": 0.7,  # arcface margin
     # train
     "aug_type": "rand",
-    "rand_aug_severity": 6,
-    "rand_aug_width": 6,
+    "rand_aug_severity": 5,
+    "rand_aug_width": 5,
     "num_epochs": 20,
     "return_best": "score",
     "accum_grad": 1,
