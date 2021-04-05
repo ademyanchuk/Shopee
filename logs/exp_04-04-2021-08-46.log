@@ -1,0 +1,90 @@
+Experiment: exp_04-04-2021-08-46
+Training with a single process on 1 GPUs.
+Git commit hash: fb4427c
+Using CSV: /root/Projects/Shopee/meta_data/train_folds.csv
+NumExpr defaulting to 4 threads.
+Data: train size: 27399, val_size: 6851
+Loading pretrained weights from url (https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_efficientnet_b3_ns-9d44bf68.pth)
+Model 'ArcFaceNet' with backbone: tf_efficientnet_b3_ns created, param count: 17_126_440
+Using optimizer: AdamW (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    eps: 1e-08
+    lr: 0.001
+    weight_decay: 0.0
+)
+AMP: 'NativeScaler'
+Epoch 0 - avg train loss: 16.6381
+Epoch 0 - avg val score: 0.6620, th: nan
+epoch step: lr: 0.0000050
+Epoch 0 - Save @ score: 0.6620
+Epoch 1 - avg train loss: 16.4919
+Epoch 1 - avg val score: 0.6592, th: nan
+epoch step: lr: 0.0002040
+Epoch 2 - avg train loss: 14.2151
+Epoch 2 - avg val score: 0.7332, th: nan
+epoch step: lr: 0.0004030
+Epoch 2 - Save @ score: 0.7332
+Epoch 3 - avg train loss: 10.2466
+Epoch 3 - avg val score: 0.7436, th: nan
+epoch step: lr: 0.0006020
+Epoch 3 - Save @ score: 0.7436
+Epoch 4 - avg train loss: 7.9818
+Epoch 4 - avg val score: 0.7458, th: nan
+epoch step: lr: 0.0008010
+Epoch 4 - Save @ score: 0.7458
+Epoch 5 - avg train loss: 7.0116
+Epoch 5 - avg val score: 0.7509, th: nan
+epoch step: lr: 0.0008536
+Epoch 5 - Save @ score: 0.7509
+Epoch 6 - avg train loss: 6.0703
+Epoch 6 - avg val score: 0.7516, th: nan
+epoch step: lr: 0.0007939
+Epoch 6 - Save @ score: 0.7516
+Epoch 7 - avg train loss: 5.1392
+Epoch 7 - avg val score: 0.7490, th: nan
+epoch step: lr: 0.0007270
+Epoch 8 - avg train loss: 4.4017
+Epoch 8 - avg val score: 0.7552, th: nan
+epoch step: lr: 0.0006545
+Epoch 8 - Save @ score: 0.7552
+Epoch 9 - avg train loss: 3.7913
+Epoch 9 - avg val score: 0.7569, th: nan
+epoch step: lr: 0.0005783
+Epoch 9 - Save @ score: 0.7569
+Epoch 10 - avg train loss: 3.3076
+Epoch 10 - avg val score: 0.7563, th: nan
+epoch step: lr: 0.0005000
+Epoch 11 - avg train loss: 2.8801
+Epoch 11 - avg val score: 0.7564, th: nan
+epoch step: lr: 0.0004218
+Epoch 12 - avg train loss: 2.5159
+Epoch 12 - avg val score: 0.7563, th: nan
+epoch step: lr: 0.0003456
+Epoch 13 - avg train loss: 2.2117
+Epoch 13 - avg val score: 0.7594, th: nan
+epoch step: lr: 0.0002731
+Epoch 13 - Save @ score: 0.7594
+Epoch 14 - avg train loss: 1.9475
+Epoch 14 - avg val score: 0.7577, th: nan
+epoch step: lr: 0.0002062
+Epoch 15 - avg train loss: 1.7325
+Epoch 15 - avg val score: 0.7603, th: nan
+epoch step: lr: 0.0001465
+Epoch 15 - Save @ score: 0.7603
+Epoch 16 - avg train loss: 1.5621
+Epoch 16 - avg val score: 0.7598, th: nan
+epoch step: lr: 0.0000956
+Epoch 17 - avg train loss: 1.4387
+Epoch 17 - avg val score: 0.7597, th: nan
+epoch step: lr: 0.0000546
+Epoch 18 - avg train loss: 1.3351
+Epoch 18 - avg val score: 0.7594, th: nan
+epoch step: lr: 0.0000246
+Epoch 19 - avg train loss: 1.2791
+Epoch 19 - avg val score: 0.7586, th: nan
+epoch step: lr: 0.0000063
+Restoring model state from checkpoint...
+Loaded checkpoint '/root/Projects/Shopee/models/exp_04-04-2021-08-46_f0_score.pth' (epoch 16)
+validation for fold: 0, score: 0.760312670459628
