@@ -17,8 +17,8 @@ Config = {
     "pretrained": True,
     "global_pool": "avg",
     "embed_size": 512,
-    "drop_rate": 0.0,
-    "model_kwargs": {"drop_path_rate": None},
+    "drop_rate": 0.3,
+    "model_kwargs": {"drop_path_rate": 0.3},
     "bn_momentum": 0.1,  # default 0.1
     "channels_last": False,
     # ema
@@ -26,7 +26,7 @@ Config = {
     "model_ema_decay": 0.999,
     "model_ema_force_cpu": False,
     # optimizer
-    "opt_conf": {"adam": {"lr": 3e-3, "weight_decay": 0.0}},
+    "opt_conf": {"adam": {"lr": 2e-3, "weight_decay": 0.0}},
     "sch_conf": {
         "cosine": {
             "t_initial": 20,
