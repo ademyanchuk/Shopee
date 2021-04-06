@@ -26,7 +26,7 @@ Config = {
     "model_ema_decay": 0.999,
     "model_ema_force_cpu": False,
     # optimizer
-    "opt_conf": {"adam": {"lr": 1e-3, "weight_decay": 0.0}},
+    "opt_conf": {"adam": {"lr": 5e-3, "weight_decay": 0.0}},
     "sch_conf": {
         "cosine": {
             "t_initial": 20,
@@ -40,8 +40,8 @@ Config = {
     "m": 0.7,  # arcface margin
     # train
     "aug_type": "rand",
-    "rand_aug_severity": 6,
-    "rand_aug_width": 6,
+    "rand_aug_severity": 5,
+    "rand_aug_width": 5,
     "num_epochs": 20,
     "return_best": "score",
     "accum_grad": 1,
