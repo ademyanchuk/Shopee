@@ -10,7 +10,7 @@ Config = {
     "target_col": "target",
     "img_size": 384,  # resize
     "crop_size": None,  # if none == img_size
-    "bs": 48,
+    "bs": 32,
     "num_workers": 4,
     # model
     "arch1": "resnet50d",
@@ -27,7 +27,7 @@ Config = {
     "model_ema_decay": 0.999,
     "model_ema_force_cpu": False,
     # optimizer
-    "opt_conf": {"adam": {"lr": 2e-3, "weight_decay": 0.0}},
+    "opt_conf": {"adam": {"lr": 1e-3, "weight_decay": 0.0}},
     "sch_conf": {
         "cosine": {
             "t_initial": 20,
