@@ -27,11 +27,11 @@ Config = {
     "model_ema_decay": 0.999,
     "model_ema_force_cpu": False,
     # optimizer
-    "opt_conf": {"adam": {"lr": 1e-3, "weight_decay": 0.0}},
+    "opt_conf": {"adam": {"lr": 5e-4, "weight_decay": 0.0}},
     "sch_conf": {
         "cosine": {
             "t_initial": 20,
-            "lr_min": 5e-7,
+            "lr_min": 1e-7,
             "warmup_t": 5,
             "warmup_lr_init": 5e-6,
         }
