@@ -25,8 +25,8 @@ opt_conf:
     weight_decay: 0.0
 sch_conf:
   cosine:
-    t_initial: 25
-    lr_min: 1.0e-07
+    t_initial: 20
+    lr_min: 5.0e-07
     warmup_t: 5
     warmup_lr_init: 5.0e-06
 s: 30
@@ -34,7 +34,7 @@ m: 0.7
 aug_type: rand
 rand_aug_severity: 5
 rand_aug_width: 5
-num_epochs: 25
+num_epochs: 20
 return_best: score
 accum_grad: 1
 clip_grad: 1.0
