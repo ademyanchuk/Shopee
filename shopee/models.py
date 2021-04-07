@@ -37,17 +37,27 @@ class ArcFaceLayer(nn.Module):
 class ArcFaceNet(nn.Module):
     def __init__(self, num_classes: int, Config: dict, pretrained: bool):
         super(ArcFaceNet, self).__init__()
-        self.backbone = timm_backbone(
+        self.backbone1 = timm_backbone(
             f_out=0,
-            arch=Config["arch"],
+            arch=Config["arch1"],
             pretrained=pretrained,
             global_pool=Config["global_pool"],
             drop_rate=Config["drop_rate"],
             bn_momentum=Config["bn_momentum"],
             **Config["model_kwargs"],
         )
-        self.arch = Config["arch"]
-        num_features = self.backbone.num_features
+        self.backbone2 = timm_backbone(
+            f_out=0,
+            arch=Config["arch2"],
+            pretrained=pretrained,
+            global_pool=Config["global_pool"],
+            drop_rate=Config["drop_rate"],
+            bn_momentum=Config["bn_momentum"],
+            **Config["model_kwargs"],
+        )
+        self.arch1 = Config["arch1"]
+        self.arch2 = Config["arch2"]
+        num_features = self.backbone1.num_features + self.backbone2.num_features
 
         self.bn1 = nn.BatchNorm1d(num_features)
         self.dropout = nn.Dropout2d(Config["drop_rate"], inplace=True)
@@ -59,10 +69,15 @@ class ArcFaceNet(nn.Module):
         )
 
     def __repr__(self):
-        return repr(self.__class__.__name__) + f" with backbone: {self.arch}"
+        return (
+            repr(self.__class__.__name__)
+            + f" with backbones: {self.arch1} and {self.arch2}"
+        )
 
     def forward(self, x):
-        features = self.backbone(x)
+        features1 = self.backbone1(x)
+        features2 = self.backbone2(x)
+        features = torch.cat([features1, features2], dim=1)
         features = self.bn1(features)
         features = self.dropout(features)
         features = self.fc1(features)
