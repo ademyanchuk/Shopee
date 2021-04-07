@@ -8,17 +8,18 @@ Config = {
     # data
     "image_id_col": "image",
     "target_col": "target",
-    "img_size": 512,  # resize
+    "img_size": 384,  # resize
     "crop_size": None,  # if none == img_size
-    "bs": 32,
+    "bs": 64,
     "num_workers": 4,
     # model
-    "arch": "tf_efficientnet_b3_ns",
+    "arch1": "resnet50d",
+    "arch2": "tf_efficientnet_b1_ns",
     "pretrained": True,
     "global_pool": "avg",
     "embed_size": 512,
-    "drop_rate": 0.3,
-    "model_kwargs": {"drop_path_rate": 0.3},
+    "drop_rate": 0.0,
+    "model_kwargs": {"drop_path_rate": None},
     "bn_momentum": 0.1,  # default 0.1
     "channels_last": False,
     # ema
