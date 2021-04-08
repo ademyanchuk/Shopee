@@ -13,7 +13,7 @@ Config = {
     "bs": 48,
     "num_workers": 4,
     # model
-    "arch": "resnet50d",
+    "arch": "tf_efficientnet_b1_ns",
     "pretrained": True,
     "global_pool": "avg",
     "embed_size": 512,
