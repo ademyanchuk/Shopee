@@ -13,7 +13,7 @@ Config = {
     "bs": 48,
     "num_workers": 4,
     # model
-    "arch": "tf_efficientnet_b1_ns",
+    "arch": "tf_efficientnet_b0_ns",
     "pretrained": True,
     "global_pool": "avg",
     "embed_size": 512,
