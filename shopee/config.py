@@ -8,13 +8,12 @@ Config = {
     # data
     "image_id_col": "image",
     "target_col": "target",
-    "img_size": 384,  # resize
+    "img_size": 512,  # resize
     "crop_size": None,  # if none == img_size
-    "bs": 32,
+    "bs": 64,
     "num_workers": 4,
     # model
-    "arch1": "resnet50d",
-    "arch2": "tf_efficientnet_b1_ns",
+    "arch": "resnet50d",
     "pretrained": True,
     "global_pool": "avg",
     "embed_size": 512,
@@ -27,7 +26,7 @@ Config = {
     "model_ema_decay": 0.999,
     "model_ema_force_cpu": False,
     # optimizer
-    "opt_conf": {"adam": {"lr": 5e-4, "weight_decay": 0.0}},
+    "opt_conf": {"adam": {"lr": 1e-3, "weight_decay": 0.0}},
     "sch_conf": {
         "cosine": {
             "t_initial": 20,
