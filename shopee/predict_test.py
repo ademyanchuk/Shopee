@@ -69,6 +69,62 @@ def predict_one_model(
     return df
 
 
+def predict_2_models(
+    exp_names: str,
+    on_fold: int,
+    df: pd.DataFrame,
+    image_dir: Path,
+    model_dir: Path,
+    conf_dir: Path,
+    threshold: Optional[float] = None,
+):
+    emb_lists, emb_tensors = [], []
+    for exp_name in exp_names:
+        with open(conf_dir / f"{exp_name}_conf.yaml", "r") as f:
+            Config = yaml.safe_load(f)
+        test_ds = init_test_dataset(Config, df, image_dir)
+        test_dl = DataLoader(
+            test_ds,
+            batch_size=Config["bs"],
+            shuffle=False,
+            num_workers=Config["num_workers"],
+            pin_memory=True,
+        )
+        num_classes = FOLD_NUM_CLASSES[on_fold]
+
+        model = ArcFaceNet(num_classes, Config, pretrained=False)
+        model.cuda()
+        if Config["channels_last"]:
+            model = model.to(memory_format=torch.channels_last)
+        checkpoint_path = model_dir / f"{exp_name}_f{on_fold}_score.pth"
+        epoch, _, _, _ = resume_checkpoint(model, checkpoint_path)
+        assert isinstance(epoch, int)
+        emb_list, emb_tensor = test_epoch(model, test_dl, epoch, Config, use_amp=True)
+        emb_lists.append(emb_list)
+        emb_tensors.append(emb_tensor)
+    emb_lists = [
+        torch.cat([b1, b2], dim=1) for b1, b2 in zip(emb_lists[0], emb_lists[1])
+    ]
+    emb_tensors = torch.cat(emb_tensors, dim=1)
+    # matching
+    stats = []
+    for batch in tqdm(emb_lists):
+        selection = (batch @ emb_tensors.T).cpu().numpy()
+        batch_stats = get_sim_stats(selection)
+        stats.append(batch_stats)
+    quants = np.quantile(np.concatenate(stats), q=[0.3, 0.6, 0.9])
+    matches = []
+    for batch, stat in zip(emb_lists, stats):
+        threshold = pd.Series(stat).apply(lambda x: compute_thres(x, quants))
+        threshold = threshold.values[:, None]
+        batch_sims = (batch @ emb_tensors.T).cpu().numpy()
+        selection = batch_sims > threshold
+        for row in selection:
+            matches.append(" ".join(df.iloc[row].posting_id.tolist()))
+    df["matches"] = matches
+    return df
+
+
 def test_epoch(model, dataloader, epoch, Config, use_amp):
     model.eval()
     epoch_logits = []
