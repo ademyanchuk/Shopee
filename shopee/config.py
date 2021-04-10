@@ -15,7 +15,7 @@ Config = {
     # model
     "arch": "tf_efficientnet_b0_ns",
     "pretrained": True,
-    "global_pool": "avg",
+    "global_pool": "catavgmax",
     "embed_size": 256,
     "drop_rate": 0.0,
     "model_kwargs": {"drop_path_rate": 0.3},
