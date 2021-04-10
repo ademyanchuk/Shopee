@@ -48,6 +48,8 @@ class ArcFaceNet(nn.Module):
         )
         self.arch = Config["arch"]
         num_features = self.backbone.num_features
+        if Config["global_pool"] == "catavgmax":
+            num_features *= 2
 
         self.bn1 = nn.BatchNorm1d(num_features)
         self.dropout = nn.Dropout2d(Config["drop_rate"], inplace=True)
