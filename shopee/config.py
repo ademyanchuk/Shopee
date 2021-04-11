@@ -29,7 +29,7 @@ Config = {
     "opt_conf": {"adam": {"lr": 1e-3, "weight_decay": 0.0}},
     "sch_conf": {
         "cosine": {
-            "t_initial": 30,
+            "t_initial": 20,
             "lr_min": 1e-7,
             "warmup_t": 10,
             "warmup_lr_init": 5e-6,
@@ -39,10 +39,10 @@ Config = {
     "s": 30,  # arcface s scalar
     "m": 0.7,  # arcface margin
     # train
-    "aug_type": "rand",
+    "aug_type": "albu",
     "rand_aug_severity": 5,
     "rand_aug_width": 5,
-    "num_epochs": 30,
+    "num_epochs": 20,
     "return_best": "score",
     "accum_grad": 1,
     "clip_grad": 1.0,  # norm of parameters grad
