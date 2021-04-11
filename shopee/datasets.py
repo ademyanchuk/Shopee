@@ -139,6 +139,7 @@ def init_dataloaders(train_ds: ShImageDataset, val_ds: ShImageDataset, Config: d
             shuffle=True,
             num_workers=Config["num_workers"],
             pin_memory=True,
+            worker_init_fn=lambda id: np.random.seed(torch.initial_seed() // 2**32 + id),
         ),
         "val": DataLoader(
             val_ds,
