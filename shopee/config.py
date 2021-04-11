@@ -18,7 +18,7 @@ Config = {
     "global_pool": "catavgmax",
     "embed_size": 256,
     "drop_rate": 0.0,
-    "model_kwargs": {"drop_path_rate": 0.3},
+    "model_kwargs": {"drop_path_rate": None},
     "bn_momentum": 0.1,  # default 0.1
     "channels_last": False,
     # ema
@@ -31,7 +31,7 @@ Config = {
         "cosine": {
             "t_initial": 20,
             "lr_min": 1e-7,
-            "warmup_t": 10,
+            "warmup_t": 2,
             "warmup_lr_init": 5e-6,
         }
     },
