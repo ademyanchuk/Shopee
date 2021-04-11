@@ -66,7 +66,7 @@ def row_wise_f1_score(labels, preds):
 def get_sim_stats(sims):
     best25_mean = []
     for sim in sims:
-        best25_ids = np.argsort(sim)[-15:]
+        best25_ids = np.argsort(sim)[-6:]
         best25_mean.append(np.mean(sim[best25_ids]))
     return best25_mean
 
@@ -74,12 +74,12 @@ def get_sim_stats(sims):
 def get_sim_stats_torch(sims: torch.Tensor):
     best_mean = []
     for sim in sims:
-        best_ids = torch.argsort(sim)[-15:]
+        best_ids = torch.argsort(sim)[-6:]
         best_mean.append(torch.mean(sim[best_ids]))
     return torch.tensor(best_mean)
 
 
-def compute_thres(mean_sim, qunts, coeff=0.95):
+def compute_thres(mean_sim, qunts, coeff=0.9):
     if mean_sim <= qunts[0]:
         return qunts[0] * coeff
     elif mean_sim > qunts[0] and mean_sim <= qunts[1]:
