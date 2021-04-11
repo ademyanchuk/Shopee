@@ -1,0 +1,39 @@
+debug: false
+seed: 42
+image_id_col: image
+target_col: target
+img_size: 512
+crop_size: null
+bs: 48
+num_workers: 4
+arch: tf_efficientnet_b0_ns
+pretrained: true
+global_pool: catavgmax
+embed_size: 256
+drop_rate: 0.0
+model_kwargs:
+  drop_path_rate: null
+bn_momentum: 0.1
+channels_last: false
+model_ema: false
+model_ema_decay: 0.999
+model_ema_force_cpu: false
+opt_conf:
+  adam:
+    lr: 0.001
+    weight_decay: 0.0
+sch_conf:
+  cosine:
+    t_initial: 20
+    lr_min: 1.0e-07
+    warmup_t: 2
+    warmup_lr_init: 5.0e-06
+s: 30
+m: 0.7
+aug_type: albu
+rand_aug_severity: 5
+rand_aug_width: 5
+num_epochs: 20
+return_best: score
+accum_grad: 1
+clip_grad: 1.0
