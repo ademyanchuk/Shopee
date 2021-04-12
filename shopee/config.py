@@ -17,7 +17,7 @@ Config = {
     "pretrained": True,
     "global_pool": "catavgmax",
     "embed_size": 512,
-    "drop_rate": 0.1,
+    "drop_rate": 0.0,
     "model_kwargs": {"drop_path_rate": None},
     "bn_momentum": 0.1,  # default 0.1
     "channels_last": False,
@@ -26,12 +26,12 @@ Config = {
     "model_ema_decay": 0.999,
     "model_ema_force_cpu": False,
     # optimizer
-    "opt_conf": {"adam": {"lr": 3e-4, "weight_decay": 0.0}},
+    "opt_conf": {"adam": {"lr": 5e-4, "weight_decay": 0.0}},
     "sch_conf": {
         "cosine": {
-            "t_initial": 15,
-            "lr_min": 1e-6,
-            "warmup_t": 5,
+            "t_initial": 20,
+            "lr_min": 5e-7,
+            "warmup_t": 2,
             "warmup_lr_init": 1e-5,
         }
     },
@@ -42,7 +42,7 @@ Config = {
     "aug_type": "albu",
     "rand_aug_severity": 5,
     "rand_aug_width": 5,
-    "num_epochs": 15,
+    "num_epochs": 20,
     "return_best": "score",
     "accum_grad": 1,
     "clip_grad": 1.0,  # norm of parameters grad
