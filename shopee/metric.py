@@ -6,13 +6,16 @@ from torch.nn import functional as F
 
 
 # Cosine similiarity across all pairs of rows
-def emb_sim(inp):
+def emb_sim(inp, chunk_sz=0):
+    assert chunk_sz >= 0
     inp = F.normalize(inp)
-    return inp @ inp.T
+    if chunk_sz == 0:
+        return inp @ inp.T
+    else:
+        return emb_sim_chunked(inp, chunk_sz)
 
 
 def emb_sim_chunked(inp, chunk_sz):
-    inp = F.normalize(inp)
     num_chunks = (len(inp) // chunk_sz) + 1
     sims = []
     for i in range(num_chunks):
@@ -101,8 +104,8 @@ def compute_thres(mean_sim, qunts, coeff=0.9):
         return qunts[2] * coeff
 
 
-def validate_score(df, embeeds, th):
-    sims = emb_sim(embeeds)
+def validate_score(df, embeeds, th, chunk_sz=0):
+    sims = emb_sim(embeeds, chunk_sz)
     sims = sims.cpu().numpy()
     # add some similarity scores statistics before thresholding
     best25_mean = get_sim_stats(sims)
