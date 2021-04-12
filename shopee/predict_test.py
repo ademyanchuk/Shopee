@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 import numpy as np
 import pandas as pd
@@ -10,7 +10,7 @@ from torch.cuda.amp import autocast
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from shopee.metric import compute_thres, emb_sim, get_sim_stats
+from shopee.metric import compute_thres, emb_sim, get_sim_stats, get_sim_stats_torch
 
 from .checkpoint_utils import resume_checkpoint
 from .datasets import init_test_dataset
@@ -19,37 +19,14 @@ from .models import ArcFaceNet
 FOLD_NUM_CLASSES = {0: 11014, 1: 11014, 2: 11013, 3: 11014, 4: 11014}
 
 
-def compute_matches(emb_tensor, df):
-    sims = emb_sim(emb_tensor, chunk_sz=256)
-    sims = sims.cpu().numpy()
-
-    stats = get_sim_stats(sims)
-    quants = np.quantile(stats, q=[0.3, 0.6, 0.9])
-    threshold = pd.Series(stats).apply(lambda x: compute_thres(x, quants))
-    threshold = threshold.values[:, None]
-    selection = sims > threshold
-
-    matches = []
-    for row in selection:
-        matches.append(df.iloc[row].posting_id.tolist())
-    return matches
-
-
-def combine_predictions(row):
-    x = np.concatenate([row["img_matches"], row["text_matches"]])
-    return " ".join(np.unique(x))
-
-
-def predict_img_text(
+def get_image_embeds(
+    conf_dir: Path,
     exp_name: str,
-    on_fold: int,
     df: pd.DataFrame,
     image_dir: Path,
     model_dir: Path,
-    conf_dir: Path,
-    text_model_args: dict,
+    on_fold: int,
 ):
-    # images
     with open(conf_dir / f"{exp_name}_conf.yaml", "r") as f:
         Config = yaml.safe_load(f)
     test_ds = init_test_dataset(Config, df, image_dir)
@@ -70,13 +47,54 @@ def predict_img_text(
     epoch, _, _, _ = resume_checkpoint(model, checkpoint_path)
     assert isinstance(epoch, int)
     _, img_embeds = test_epoch(model, test_dl, epoch, Config, use_amp=True)
-    img_matches = compute_matches(img_embeds, df)
+    return img_embeds
+
+
+def compute_matches(
+    emb_tensor: torch.Tensor, df: pd.DataFrame, chunk_sz: int
+) -> List[List[str]]:
+    matches = []
+    num_chunks = (len(emb_tensor) // chunk_sz) + 1
+
+    for i in range(num_chunks):
+        a = i * chunk_sz
+        b = (i + 1) * chunk_sz
+        b = min(b, len(emb_tensor))
+        print(f"compute similarities for chunks {a} to {b}")
+        sim = emb_tensor[a:b] @ emb_tensor.T
+        stats = get_sim_stats_torch(sim)
+        quants = torch.quantile(stats, q=torch.tensor([0.3, 0.6, 0.9]))
+        threshold = torch.stack([compute_thres(x, quants) for x in stats])
+        threshold = threshold[:, None].cuda()
+        selection = (sim > threshold).cpu().numpy()
+        for row in selection:
+            matches.append(df.iloc[row].posting_id.tolist())
+    return matches
+
+
+def combine_predictions(row):
+    x = np.concatenate([row["img_matches"], row["text_matches"]])
+    return " ".join(np.unique(x))
+
+
+def predict_img_text(
+    exp_name: str,
+    on_fold: int,
+    df: pd.DataFrame,
+    image_dir: Path,
+    model_dir: Path,
+    conf_dir: Path,
+    text_model_args: dict,
+):
+    img_embeds = get_image_embeds(conf_dir, exp_name, df, image_dir, model_dir, on_fold)
+
+    img_matches = compute_matches(img_embeds, df, chunk_sz=1024)
 
     # texts
     model_txt = TfidfVectorizer(**text_model_args)
-    text_embeds = model_txt.fit_transform(df["title"]).toarray()
-    text_embeds = torch.from_numpy(text_embeds)
-    text_matches = compute_matches(text_embeds, df)
+    text_embeds = model_txt.fit_transform(df["title"]).toarray().astype(np.float32)
+    text_embeds = torch.from_numpy(text_embeds).cuda()
+    text_matches = compute_matches(text_embeds, df, chunk_sz=1024)
 
     tmp_df = pd.DataFrame({"img_matches": img_matches, "text_matches": text_matches})
 
