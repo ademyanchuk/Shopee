@@ -22,6 +22,7 @@ def emb_sim_chunked(inp, chunk_sz):
         a = i * chunk_sz
         b = (i + 1) * chunk_sz
         b = min(b, len(inp))
+        print(f"compute similarities for chunks {a} to {b}")
         sim = inp[a:b] @ inp.T
         sims.append(sim)
     return torch.cat(sims)
