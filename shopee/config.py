@@ -46,6 +46,13 @@ Config = {
     "return_best": "score",
     "accum_grad": 1,
     "clip_grad": 1.0,  # norm of parameters grad
+    # text
+    "tfidf_args": {
+        "analyzer": "char_wb",
+        "ngram_range": (2, 3),
+        "binary": True,
+        "max_features": 5120,
+    },  # provide valid tfidf args here
 }
 
 
