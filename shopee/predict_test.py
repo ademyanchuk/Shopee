@@ -5,17 +5,83 @@ import numpy as np
 import pandas as pd
 import torch
 import yaml
+from sklearn.feature_extraction.text import TfidfVectorizer
 from torch.cuda.amp import autocast
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from shopee.metric import compute_thres, get_sim_stats
+from shopee.metric import compute_thres, emb_sim, get_sim_stats
 
 from .checkpoint_utils import resume_checkpoint
 from .datasets import init_test_dataset
 from .models import ArcFaceNet
 
 FOLD_NUM_CLASSES = {0: 11014, 1: 11014, 2: 11013, 3: 11014, 4: 11014}
+
+
+def compute_matches(emb_tensor, df):
+    sims = emb_sim(emb_tensor, chunk_sz=256)
+    sims = sims.cpu().numpy()
+
+    stats = get_sim_stats(sims)
+    quants = np.quantile(stats, q=[0.3, 0.6, 0.9])
+    threshold = pd.Series(stats).apply(lambda x: compute_thres(x, quants))
+    threshold = threshold.values[:, None]
+    selection = sims > threshold
+
+    matches = []
+    for row in selection:
+        matches.append(df.iloc[row].posting_id.tolist())
+    return matches
+
+
+def combine_predictions(row):
+    x = np.concatenate([row["img_matches"], row["text_matches"]])
+    return " ".join(np.unique(x))
+
+
+def predict_img_text(
+    exp_name: str,
+    on_fold: int,
+    df: pd.DataFrame,
+    image_dir: Path,
+    model_dir: Path,
+    conf_dir: Path,
+    text_model_args: dict,
+):
+    # images
+    with open(conf_dir / f"{exp_name}_conf.yaml", "r") as f:
+        Config = yaml.safe_load(f)
+    test_ds = init_test_dataset(Config, df, image_dir)
+    test_dl = DataLoader(
+        test_ds,
+        batch_size=Config["bs"],
+        shuffle=False,
+        num_workers=Config["num_workers"],
+        pin_memory=True,
+    )
+    num_classes = FOLD_NUM_CLASSES[on_fold]
+
+    model = ArcFaceNet(num_classes, Config, pretrained=False)
+    model.cuda()
+    if Config["channels_last"]:
+        model = model.to(memory_format=torch.channels_last)
+    checkpoint_path = model_dir / f"{exp_name}_f{on_fold}_score.pth"
+    epoch, _, _, _ = resume_checkpoint(model, checkpoint_path)
+    assert isinstance(epoch, int)
+    _, img_embeds = test_epoch(model, test_dl, epoch, Config, use_amp=True)
+    img_matches = compute_matches(img_embeds, df)
+
+    # texts
+    model_txt = TfidfVectorizer(**text_model_args)
+    text_embeds = model_txt.fit_transform(df["title"]).toarray()
+    text_embeds = torch.from_numpy(text_embeds)
+    text_matches = compute_matches(text_embeds, df)
+
+    tmp_df = pd.DataFrame({"img_matches": img_matches, "text_matches": text_matches})
+
+    df["matches"] = tmp_df.apply(combine_predictions, axis=1)
+    return df
 
 
 def predict_one_model(
