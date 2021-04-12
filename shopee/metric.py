@@ -11,6 +11,19 @@ def emb_sim(inp):
     return inp @ inp.T
 
 
+def emb_sim_chunked(inp, chunk_sz):
+    inp = F.normalize(inp)
+    num_chunks = (len(inp) // chunk_sz) + 1
+    sims = []
+    for i in range(num_chunks):
+        a = i * chunk_sz
+        b = (i + 1) * chunk_sz
+        b = min(b, len(inp))
+        sim = inp[a:b] @ inp.T
+        sims.append(sim)
+    return torch.cat(sims)
+
+
 # F1 score of prediction groups based on target_groups
 def score_groups(pred_matrix, target_matrix):
     intersect = pred_matrix.logical_and(target_matrix)
