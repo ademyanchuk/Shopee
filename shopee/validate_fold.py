@@ -44,6 +44,7 @@ def validate_fold_text(df: pd.DataFrame, fold: int, Config: dict):
     model = TfidfVectorizer(**Config["tfidf_args"])
     model.fit(train_df["title"])
     text_embeds = model.transform(val_df["title"]).toarray()
+    text_embeds = torch.from_numpy(text_embeds)
     score, pred_df = validate_score(val_df, text_embeds, th=None, chunk_sz=256)
     return score, pred_df
 
