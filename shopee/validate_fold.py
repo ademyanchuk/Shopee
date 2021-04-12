@@ -4,6 +4,7 @@ from typing import List, Tuple
 import pandas as pd
 import torch
 import yaml
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 from .checkpoint_utils import resume_checkpoint
 from .datasets import init_dataloaders, init_datasets
@@ -34,6 +35,16 @@ def validate_fold(
         model, dataloaders["val"], epoch, Config, use_amp=True
     )
     score, pred_df = validate_score(val_df, embeds, th)
+    return score, pred_df
+
+
+def validate_fold_text(df: pd.DataFrame, fold: int, Config: dict):
+    train_df = df[df["fold"] != fold].copy().reset_index(drop=True)
+    val_df = df[df["fold"] == fold].copy().reset_index(drop=True)
+    model = TfidfVectorizer(**Config["tfidf_args"])
+    model.fit(train_df["title"])
+    text_embeds = model.transform(val_df["title"]).toarray()
+    score, pred_df = validate_score(val_df, text_embeds, th=None, chunk_sz=256)
     return score, pred_df
 
 
