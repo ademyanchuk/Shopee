@@ -2,8 +2,8 @@ import logging
 from pathlib import Path
 from typing import List, Tuple
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import torch
 import yaml
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -65,7 +65,7 @@ def finalize_df(img_df: pd.DataFrame, text_df: pd.DataFrame):
 
     # rename img_df columns
     img_df = img_df.rename(
-        {
+        columns={
             "best25_mean": "best25_mean_img",
             "f1": "f1_img",
             "pred_postings": "pred_postings_img",
