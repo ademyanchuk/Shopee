@@ -120,16 +120,3 @@ def validate_score(df, embeeds, th, chunk_sz=0):
     scores, f1mean = row_wise_f1_score(df["true_postings"], df["pred_postings"])
     df["f1"] = scores
     return f1mean, df
-
-
-def make_submit_df(df, embeeds, th):
-    sims = emb_sim(embeeds)
-    sims = sims.cpu().numpy()
-    sims = sims > th
-
-    assert len(df) == len(sims)
-    preds = []
-    for i in range(len(df)):
-        preds.append(" ".join(df["posting_id"].values[sims[i]]))
-    df["matches"] = preds
-    return df
