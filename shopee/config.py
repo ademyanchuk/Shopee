@@ -16,9 +16,9 @@ Config = {
     "arch": "tf_efficientnet_b1_ns",
     "pretrained": True,
     "global_pool": "catavgmax",
-    "embed_size": 512,
+    "embed_size": 256,
     "drop_rate": 0.0,
-    "model_kwargs": {"drop_path_rate": None},
+    "model_kwargs": {"drop_path_rate": 0.2},
     "bn_momentum": 0.1,  # default 0.1
     "channels_last": False,
     # ema
@@ -31,8 +31,8 @@ Config = {
         "cosine": {
             "t_initial": 20,
             "lr_min": 5e-7,
-            "warmup_t": 2,
-            "warmup_lr_init": 1e-5,
+            "warmup_t": 10,
+            "warmup_lr_init": 1e-6,
         }
     },
     # loss
@@ -49,9 +49,10 @@ Config = {
     # text
     "tfidf_args": {
         "analyzer": "char_wb",
-        "ngram_range": (2, 3),
-        "binary": True,
+        "ngram_range": (1, 3),
         "max_features": 5120,
+        "max_df": 0.96,
+        "binary": True,
     },  # provide valid tfidf args here
 }
 
