@@ -30,7 +30,6 @@ def objective(trial: optuna.trial.Trial):
             "max_features", low=1024, high=1024 * 20, step=1024
         ),
         "max_df": trial.suggest_float("max_df", low=0.9, high=1.0, step=0.01),
-        "min_df": trial.suggest_float("min_df", low=0.0, high=0.1, step=0.01),
         "stop_words": "english",
         "binary": True,
     }
