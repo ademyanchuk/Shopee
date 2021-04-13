@@ -88,6 +88,7 @@ def finalize_df(img_df: pd.DataFrame, text_df: pd.DataFrame):
         lambda x: " ".join(x)
     )
     img_df["joined_pred"] = img_df["joined_pred"].apply(lambda x: " ".join(x))
+    img_df["true_postings"] = img_df["true_postings"].apply(lambda x: " ".join(x))
     return f1mean, img_df
 
 
