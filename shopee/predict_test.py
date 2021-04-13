@@ -102,6 +102,18 @@ def predict_img_text(
     return df
 
 
+def predict_text(
+    df: pd.DataFrame, text_model_args: dict,
+):
+    model_txt = TfidfVectorizer(**text_model_args)
+    text_embeds = model_txt.fit_transform(df["title"]).toarray().astype(np.float32)
+    text_embeds = torch.from_numpy(text_embeds).cuda()
+    text_matches = compute_matches(text_embeds, df, chunk_sz=1024)
+
+    df["matches"] = text_matches
+    return df
+
+
 def predict_one_model(
     exp_name: str,
     on_fold: int,
