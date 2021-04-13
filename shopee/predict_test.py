@@ -111,6 +111,7 @@ def predict_text(
     text_matches = compute_matches(text_embeds, df, chunk_sz=1024)
 
     df["matches"] = text_matches
+    df["matches"] = df["matches"].apply(lambda x: " ".join(x))
     return df
 
 
