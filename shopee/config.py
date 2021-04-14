@@ -60,3 +60,19 @@ Config = {
 def save_config_yaml(config: dict, log_dir: Path, exp_name: str):
     with open(log_dir / f"{exp_name}_conf.yaml", "w") as outfile:
         yaml.dump(config, outfile, default_flow_style=False, sort_keys=False)
+
+
+class PrettySafeLoader(yaml.SafeLoader):
+    def construct_python_tuple(self, node):
+        return tuple(self.construct_sequence(node))
+
+
+PrettySafeLoader.add_constructor(
+    "tag:yaml.org,2002:python/tuple", PrettySafeLoader.construct_python_tuple
+)
+
+
+def load_config_yaml(conf_dir: Path, exp_name: str):
+    with open(conf_dir / f"{exp_name}_conf.yaml", "r") as f:
+        Config = yaml.load(f, Loader=PrettySafeLoader)
+    return Config
