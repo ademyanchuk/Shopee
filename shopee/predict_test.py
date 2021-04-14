@@ -4,12 +4,12 @@ from typing import List, Optional
 import numpy as np
 import pandas as pd
 import torch
-import yaml
 from sklearn.feature_extraction.text import TfidfVectorizer
 from torch.cuda.amp import autocast
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
+from shopee.config import load_config_yaml
 from shopee.metric import compute_thres, emb_sim, get_sim_stats, get_sim_stats_torch
 
 from .checkpoint_utils import resume_checkpoint
@@ -27,8 +27,7 @@ def get_image_embeds(
     model_dir: Path,
     on_fold: int,
 ):
-    with open(conf_dir / f"{exp_name}_conf.yaml", "r") as f:
-        Config = yaml.safe_load(f)
+    Config = load_config_yaml(conf_dir, exp_name)
     test_ds = init_test_dataset(Config, df, image_dir)
     test_dl = DataLoader(
         test_ds,
@@ -124,8 +123,7 @@ def predict_one_model(
     conf_dir: Path,
     threshold: Optional[float] = None,
 ):
-    with open(conf_dir / f"{exp_name}_conf.yaml", "r") as f:
-        Config = yaml.safe_load(f)
+    Config = load_config_yaml(conf_dir, exp_name)
     test_ds = init_test_dataset(Config, df, image_dir)
     test_dl = DataLoader(
         test_ds,
@@ -177,8 +175,7 @@ def predict_2_models(
 ):
     emb_lists, emb_tensors = [], []
     for exp_name in exp_names:
-        with open(conf_dir / f"{exp_name}_conf.yaml", "r") as f:
-            Config = yaml.safe_load(f)
+        Config = load_config_yaml(conf_dir, exp_name)
         test_ds = init_test_dataset(Config, df, image_dir)
         test_dl = DataLoader(
             test_ds,

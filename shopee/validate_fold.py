@@ -5,8 +5,9 @@ from typing import List, Tuple
 import numpy as np
 import pandas as pd
 import torch
-import yaml
 from sklearn.feature_extraction.text import TfidfVectorizer
+
+from shopee.config import load_config_yaml
 
 from .checkpoint_utils import resume_checkpoint
 from .datasets import init_dataloaders, init_datasets
@@ -100,8 +101,7 @@ def validate_models_fold(
 
     embeds = []
     for exp_name in exp_names:
-        with open(conf_dir / f"{exp_name}_conf.yaml", "r") as f:
-            Config = yaml.safe_load(f)
+        Config = load_config_yaml(conf_dir, exp_name)
         train_ds, val_ds = init_datasets(Config, train_df, val_df, image_dir)
         dataloaders = init_dataloaders(train_ds, val_ds, Config)
         num_classes = int(train_df[Config["target_col"]].max() + 1)
