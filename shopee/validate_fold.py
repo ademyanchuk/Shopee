@@ -94,7 +94,12 @@ def finalize_df(img_df: pd.DataFrame, text_df: pd.DataFrame):
 
 
 def validate_models_fold(
-    exp_names: List[str], conf_dir: Path, fold: int, df: pd.DataFrame, image_dir: Path
+    exp_names: List[str],
+    conf_dir: Path,
+    fold: int,
+    df: pd.DataFrame,
+    image_dir: Path,
+    tfidf_args: dict,
 ) -> Tuple[float, pd.DataFrame]:
     train_df = df[df["fold"] != fold].copy().reset_index(drop=True)
     val_df = df[df["fold"] == fold].copy().reset_index(drop=True)
@@ -118,6 +123,13 @@ def validate_models_fold(
         )
         embeds.append(embed)
 
-    embeds = torch.cat(embeds, dim=1)
-    score, pred_df = validate_score(val_df, embeds, th=None)
+    embeds = torch.mean(torch.stack(embeds), dim=0)  # averaging embeedings from models
+    # image predictions
+    img_score, pred_df = validate_score(val_df, embeds, th=None)
+    print(f"Image model score: {img_score} [for exp: {exp_names}, fold: {fold}]")
+    # text predictions
+    text_score, text_df = validate_fold_text(val_df, tfidf_args)
+    print(f"Text model score: {text_score} [for exp: {exp_names}, fold: {fold}]")
+    # finalize prediction data frame
+    score, pred_df = finalize_df(pred_df, text_df)
     return score, pred_df
