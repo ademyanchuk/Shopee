@@ -111,8 +111,9 @@ def validate_score(df, embeeds, th, chunk_sz=0):
     # add some similarity scores statistics before thresholding
     best25_mean = get_sim_stats(sims)
     df["best25_mean"] = best25_mean
-    qunts = np.quantile(df.best25_mean, q=[0.3, 0.6, 0.9])
-    th = df.apply(lambda x: compute_thres(x["best25_mean"], qunts), axis=1,)
+    # qunts = np.quantile(df.best25_mean, q=[0.3, 0.6, 0.9])
+    # th = df.apply(lambda x: compute_thres(x["best25_mean"], qunts), axis=1,)
+    th = df["best25_mean"] * 0.9
     th = th.values[:, None]
     sims = sims > th
     add_ground_truth(df)
