@@ -138,14 +138,22 @@ def init_datasets(
     Config: dict, train_df: pd.DataFrame, val_df: pd.DataFrame, image_dir: Path
 ):
     train_aug, val_aug = init_augs(Config)
-    train_ds = ShImageDataset(
-        train_df,
-        image_dir,
-        image_id_col=Config["image_id_col"],
-        target_col=Config["target_col"],
-        is_test=False,
-        transform=train_aug,
-    )
+    if Config["moco"]:
+        train_ds = ShMocoDataset(
+            train_df,
+            image_dir,
+            image_id_col=Config["image_id_col"],
+            transform=train_aug,
+        )
+    else:
+        train_ds = ShImageDataset(
+            train_df,
+            image_dir,
+            image_id_col=Config["image_id_col"],
+            target_col=Config["target_col"],
+            is_test=False,
+            transform=train_aug,
+        )
     val_ds = ShImageDataset(
         val_df,
         image_dir,
