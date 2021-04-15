@@ -123,7 +123,7 @@ def validate_models_fold(
         )
         embeds.append(embed)
 
-    embeds = torch.cat(embeds, dim=0)  # concat embeedings from models
+    embeds = torch.cat(embeds, dim=1)  # concat embeedings from models
     # image predictions
     img_score, pred_df = validate_score(val_df, embeds, th=None)
     print(f"Image model score: {img_score} [for exp: {exp_names}, fold: {fold}]")
