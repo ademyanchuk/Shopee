@@ -271,11 +271,14 @@ def train_epoch(
 ):
     model.train()
     optimizer.zero_grad()  # if use accum_grad > 1
+    train_batch_fn = train_batch
+    if Config["moco"]:
+        train_batch_fn = train_batch_moco
     running_loss = 0.0
     bar = tqdm(dataloader)
     for step, batch in enumerate(bar, start=1):
         bar.set_description(f"Epoch {epoch} [train]".ljust(20))
-        batch_loss = train_batch(
+        batch_loss = train_batch_fn(
             batch,
             model,
             optimizer,
@@ -316,6 +319,53 @@ def train_batch(
         weights = None
     with autocast(enabled=use_amp):
         outputs = model(inputs)
+        criterion.weight = weights
+        loss = criterion(outputs, targets)
+    # backward and update
+    if use_amp:
+        amp_scaler(
+            loss,
+            optimizer,
+            step,
+            Config["accum_grad"],
+            Config["clip_grad"],
+            model.parameters(),
+        )
+    else:
+        (loss / Config["accum_grad"]).backward()
+        if step % Config["accum_grad"] == 0:
+            optimizer.step()
+            optimizer.zero_grad()
+
+    if model_ema is not None:
+        model_ema.update(model)
+    return loss.item()
+
+
+def train_batch_moco(
+    batch: Dict,
+    model: nn.Module,
+    optimizer: optim.Optimizer,
+    criterion: nn.Module,
+    Config: dict,
+    use_amp: bool,
+    amp_scaler: Optional[NativeScaler],
+    model_ema: Optional[nn.Module],
+    step: int,
+) -> float:
+    image1 = batch["image1"].cuda()
+    image2 = batch["image2"].cuda()
+    if Config["channels_last"]:
+        image1 = image1.contiguous(memory_format=torch.channels_last)
+        image2 = image2.contiguous(memory_format=torch.channels_last)
+    # try to define weights
+    try:
+        weights = batch["weights"].cuda()
+    except KeyError:
+        # dataset doesn't provide weights = set to None
+        weights = None
+    with autocast(enabled=use_amp):
+        outputs, targets = model(image1, image2)
         criterion.weight = weights
         loss = criterion(outputs, targets)
     # backward and update
