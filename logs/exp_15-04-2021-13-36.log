@@ -1,0 +1,17 @@
+Experiment: exp_15-04-2021-13-36
+Training with a single process on 1 GPUs.
+Git commit hash: dced749
+Using CSV: /root/Projects/Shopee/meta_data/train_folds.csv
+NumExpr defaulting to 4 threads.
+Data: train size: 27399, val_size: 6851
+Loading pretrained weights from url (https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/resnet101d_ra2-2803ffab.pth)
+Model 'ArcFaceNet' with backbone: resnet101d created, param count: 46_396_512
+Using optimizer: AdamW (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    eps: 1e-08
+    lr: 0.0005
+    weight_decay: 0.0
+)
+AMP: 'NativeScaler'
