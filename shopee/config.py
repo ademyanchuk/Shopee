@@ -13,6 +13,7 @@ Config = {
     "bs": 32,
     "num_workers": 4,
     # model
+    "moco": False,
     "arch": "nf_resnet50",
     "pretrained": True,
     "global_pool": "catavgmax",
