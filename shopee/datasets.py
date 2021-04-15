@@ -65,6 +65,46 @@ class ShImageDataset(Dataset):
         return data
 
 
+class ShMocoDataset(Dataset):
+    def __init__(
+        self, df: pd.DataFrame, image_dir: Path, image_id_col: str, transform=None,
+    ):
+        self.df = df
+        self.image_dir = image_dir
+        self.image_id_col = image_id_col
+        self.transform = transform
+        assert self.transform is not None
+
+    def _get_img_path(self, idx: int) -> Path:
+        image_id = self.df.loc[idx, self.image_id_col]
+        file_path = self.image_dir / f"{image_id}"
+        return file_path
+
+    @property
+    def num_classes(self):
+        if self.labels is not None:
+            return len(np.unique(self.labels))
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, idx: int):
+        data = {}
+
+        file_path = self._get_img_path(idx)
+
+        # here input will be greyscale
+        image = Image.open(file_path).convert("RGB")
+
+        image = np.array(image)  # albumentations need numpy
+        image1 = self.transform(image=image)["image"]
+        image2 = self.transform(image=image)["image"]
+
+        data["image1"] = image1
+        data["image2"] = image2
+        return data
+
+
 def init_augs(Config: dict):
     aug_type = Config["aug_type"]
     if aug_type == "albu":
@@ -139,7 +179,9 @@ def init_dataloaders(train_ds: ShImageDataset, val_ds: ShImageDataset, Config: d
             shuffle=True,
             num_workers=Config["num_workers"],
             pin_memory=True,
-            worker_init_fn=lambda id: np.random.seed(torch.initial_seed() // 2**32 + id),
+            worker_init_fn=lambda id: np.random.seed(
+                torch.initial_seed() // 2 ** 32 + id
+            ),
         ),
         "val": DataLoader(
             val_ds,
