@@ -8,12 +8,12 @@ Config = {
     # data
     "image_id_col": "image",
     "target_col": "target",
-    "img_size": 640,  # resize
+    "img_size": 512,  # resize
     "crop_size": None,  # if none == img_size
-    "bs": 16,
+    "bs": 48,
     "num_workers": 4,
     # model
-    "arch": "tf_efficientnet_b3_ns",
+    "arch": "resnet101d",
     "pretrained": True,
     "global_pool": "catavgmax",
     "embed_size": 256,
