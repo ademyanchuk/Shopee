@@ -10,7 +10,7 @@ Config = {
     "target_col": "target",
     "img_size": 512,  # resize
     "crop_size": None,  # if none == img_size
-    "bs": 48,
+    "bs": 32,
     "num_workers": 4,
     # model
     "arch": "resnet101d",
