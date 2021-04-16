@@ -46,8 +46,8 @@ def train_eval_fold(
     # validation is allways on hard labels
     val_df = df[df["fold"] == args.fold].copy().reset_index(drop=True)
 
-    train_ds, val_ds = init_datasets(Config, train_df, val_df, image_dir)
-    dataloaders = init_dataloaders(train_ds, val_ds, Config)
+    train_ds, val_ds = init_datasets(Config, train_df, val_df, image_dir, is_moco=Config["moco"])
+    dataloaders = init_dataloaders(train_ds, val_ds, Config, is_moco=Config["moco"])
     logging.info(f"Data: train size: {len(train_ds)}, val_size: {len(val_ds)}")
 
     num_classes = int(train_df[Config["target_col"]].max() + 1)

@@ -135,10 +135,10 @@ def init_augs(Config: dict):
 
 
 def init_datasets(
-    Config: dict, train_df: pd.DataFrame, val_df: pd.DataFrame, image_dir: Path
+    Config: dict, train_df: pd.DataFrame, val_df: pd.DataFrame, image_dir: Path, is_moco: bool = False,
 ):
     train_aug, val_aug = init_augs(Config)
-    if Config["moco"]:
+    if is_moco:
         train_ds = ShMocoDataset(
             train_df,
             image_dir,
@@ -179,7 +179,7 @@ def init_test_dataset(Config: dict, df: pd.DataFrame, image_dir: Path):
     )
 
 
-def init_dataloaders(train_ds: ShImageDataset, val_ds: ShImageDataset, Config: dict):
+def init_dataloaders(train_ds: ShImageDataset, val_ds: ShImageDataset, Config: dict, is_moco: bool = False):
     return {
         "train": DataLoader(
             train_ds,
@@ -190,6 +190,7 @@ def init_dataloaders(train_ds: ShImageDataset, val_ds: ShImageDataset, Config: d
             worker_init_fn=lambda id: np.random.seed(
                 torch.initial_seed() // 2 ** 32 + id
             ),
+            drop_last=is_moco,
         ),
         "val": DataLoader(
             val_ds,
@@ -197,5 +198,6 @@ def init_dataloaders(train_ds: ShImageDataset, val_ds: ShImageDataset, Config: d
             shuffle=False,
             num_workers=Config["num_workers"],
             pin_memory=True,
+            drop_last=is_moco,
         ),
     }
