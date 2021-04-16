@@ -83,7 +83,7 @@ def combine_predictions(row):
 
 
 def predict_img_text(
-    exp_name: str,
+    exp_name: Union[str, List[str]],
     on_fold: int,
     df: pd.DataFrame,
     image_dir: Path,
