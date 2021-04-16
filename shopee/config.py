@@ -3,14 +3,14 @@ from pathlib import Path
 import yaml
 
 Config = {
-    "debug": True,
+    "debug": False,
     "seed": 42,
     # data
     "image_id_col": "image",
     "target_col": "target",
     "img_size": 512,  # resize
     "crop_size": None,  # if none == img_size
-    "bs": 32,
+    "bs": 48,
     "num_workers": 4,
     # model
     "moco": True,
@@ -30,9 +30,9 @@ Config = {
     "opt_conf": {"adam": {"lr": 5e-4, "weight_decay": 0.0}},
     "sch_conf": {
         "cosine": {
-            "t_initial": 2,
+            "t_initial": 20,
             "lr_min": 5e-7,
-            "warmup_t": 1,
+            "warmup_t": 5,
             "warmup_lr_init": 1e-6,
         }
     },
