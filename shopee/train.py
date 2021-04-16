@@ -15,6 +15,7 @@ from torch.cuda.amp import autocast
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from shopee import models
 
 from shopee.amp_scaler import NativeScaler
 from shopee.checkpoint_utils import resume_checkpoint, save_checkpoint
@@ -191,7 +192,7 @@ def train_model(
             model_ema,
         )
         val_loss, val_logits, val_targets = validate_epoch(
-            model.encoder_q if Config["moco"] else model,
+            model,
             dataloaders["val"],
             epoch,
             Config,
@@ -202,6 +203,7 @@ def train_model(
         val_score = np.nan
         th = np.nan
         if metrics_fn is not None:
+            print(val_logits.shape, val_logits.dtype)
             val_score, th = metrics_fn(val_logits, val_targets)
         # Loging train and val results
         logging.info(f"Epoch {epoch} - avg train loss: {train_loss:.4f}")
@@ -450,7 +452,10 @@ def validate_batch(
     targets = batch["label"].cuda()
     with torch.no_grad():
         with autocast(enabled=use_amp):
-            outputs = model(inputs)
+            if is_moco:
+                outputs = model.encoder_q(inputs)
+            else:
+                outputs = model(inputs)
         if is_moco:
             outputs = F.normalize(outputs)
     # index into only main task classes (if aux task is used)

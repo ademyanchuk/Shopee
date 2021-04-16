@@ -48,8 +48,10 @@ def treshold_finder(embs, y, start=0.7, end=1, step=0.01):
 
 def binned_threshold_f1(embs: torch.Tensor, y: torch.Tensor):
     sims = emb_sim(embs)
+    print(sims.shape, sims.dtype)
     target_matrix = y[:, None] == y[None, :]
     sim_stats = get_sim_stats_torch(sims)
+    print(sim_stats.shape, sim_stats.dtype)
     quants = torch.quantile(sim_stats, q=torch.tensor([0.3, 0.6, 0.9]))
     th = torch.stack([compute_thres(x, quants) for x in sim_stats])
     th = th[:, None].cuda()
