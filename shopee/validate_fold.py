@@ -27,7 +27,9 @@ def validate_fold(
     train_ds, val_ds = init_datasets(
         Config, train_df, val_df, image_dir, is_moco=Config["moco"]
     )
-    dataloaders = init_dataloaders(train_ds, val_ds, Config, is_moco=Config["moco"])
+    dataloaders = init_dataloaders(
+        train_ds, val_ds, Config, is_moco=False
+    )  # false so not to drop last
     num_classes = int(train_df[Config["target_col"]].max() + 1)
 
     if Config["moco"]:
