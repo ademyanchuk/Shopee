@@ -12,6 +12,7 @@ from timm.models import load_checkpoint
 from timm.utils import ModelEmaV2
 from torch import nn, optim
 from torch.cuda.amp import autocast
+from torch.nn import functional as F
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
@@ -20,6 +21,7 @@ from shopee.checkpoint_utils import resume_checkpoint, save_checkpoint
 from shopee.datasets import init_dataloaders, init_datasets
 from shopee.losses import ArcFaceLoss
 from shopee.metric import binned_threshold_f1, treshold_finder
+from shopee.moco_model import ModelMoCo
 from shopee.models import ArcFaceNet
 from shopee.optimizers import init_optimizer, init_scheduler
 from shopee.paths import LOGS_PATH, MODELS_PATH, ON_DRIVE_PATH
@@ -49,7 +51,14 @@ def train_eval_fold(
     logging.info(f"Data: train size: {len(train_ds)}, val_size: {len(val_ds)}")
 
     num_classes = int(train_df[Config["target_col"]].max() + 1)
-    model = ArcFaceNet(num_classes, Config, pretrained=True)
+    if Config["moco"]:
+        model = ModelMoCo(
+            dim=Config["embed_size"],
+            arch=Config["arch"],
+            global_pool=Config["global_pool"],
+        )
+    else:
+        model = ArcFaceNet(num_classes, Config, pretrained=True)
     logging.info(
         f"Model {model} created, param count: {sum([m.numel() for m in model.parameters()]):_}"
     )
@@ -92,8 +101,11 @@ def train_eval_fold(
             f"""after resume and step: lr - {optimizer.param_groups[0]['lr']},
             initial lr -{optimizer.param_groups[0]['initial_lr']}"""
         )
-    # Define loss function (no sense to check val loss in ArcFace setting with new groups)
-    tr_criterion = ArcFaceLoss(num_classes, s=Config["s"], m=Config["m"])
+    if Config["moco"]:
+        tr_criterion = nn.CrossEntropyLoss()
+    else:
+        # Define loss function (no sense to check val loss in ArcFace setting with new groups)
+        tr_criterion = ArcFaceLoss(num_classes, s=Config["s"], m=Config["m"])
 
     result = train_model(
         model=model,
@@ -177,7 +189,11 @@ def train_model(
             model_ema,
         )
         val_loss, val_logits, val_targets = validate_epoch(
-            model, dataloaders["val"], epoch, Config, use_amp,
+            model.encoder_q if Config["moco"] else model,
+            dataloaders["val"],
+            epoch,
+            Config,
+            use_amp,
         )
 
         val_score = np.nan
@@ -239,7 +255,7 @@ def train_model(
             logging.info(f"Epoch {epoch} - Save @ score: {best_score:.4f}")
             save_checkpoint(
                 epoch,
-                model,
+                model.encoder_q if Config["moco"] else model,
                 optimizer,
                 MODELS_PATH,
                 exp_name + "_score",
@@ -425,6 +441,8 @@ def validate_batch(
     with torch.no_grad():
         with autocast(enabled=use_amp):
             outputs = model(inputs)
+        if Config["moco"]:
+            outputs = F.normalize(outputs)
     # index into only main task classes (if aux task is used)
     return outputs, targets
 
