@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -21,32 +21,38 @@ FOLD_NUM_CLASSES = {0: 11014, 1: 11014, 2: 11013, 3: 11014, 4: 11014}
 
 def get_image_embeds(
     conf_dir: Path,
-    exp_name: str,
+    exp_names: Union[str, List[str]],
     df: pd.DataFrame,
     image_dir: Path,
     model_dir: Path,
     on_fold: int,
 ):
-    Config = load_config_yaml(conf_dir, exp_name)
-    test_ds = init_test_dataset(Config, df, image_dir)
-    test_dl = DataLoader(
-        test_ds,
-        batch_size=Config["bs"],
-        shuffle=False,
-        num_workers=Config["num_workers"],
-        pin_memory=True,
-    )
-    num_classes = FOLD_NUM_CLASSES[on_fold]
+    if isinstance(exp_names, str):
+        exp_names = [exp_names]
+    all_embeds = []
+    for exp_name in exp_names:
+        Config = load_config_yaml(conf_dir, exp_name)
+        test_ds = init_test_dataset(Config, df, image_dir)
+        test_dl = DataLoader(
+            test_ds,
+            batch_size=Config["bs"],
+            shuffle=False,
+            num_workers=Config["num_workers"],
+            pin_memory=True,
+        )
+        num_classes = FOLD_NUM_CLASSES[on_fold]
 
-    model = ArcFaceNet(num_classes, Config, pretrained=False)
-    model.cuda()
-    if Config["channels_last"]:
-        model = model.to(memory_format=torch.channels_last)
-    checkpoint_path = model_dir / f"{exp_name}_f{on_fold}_score.pth"
-    epoch, _, _, _ = resume_checkpoint(model, checkpoint_path)
-    assert isinstance(epoch, int)
-    _, img_embeds = test_epoch(model, test_dl, epoch, Config, use_amp=True)
-    return img_embeds
+        model = ArcFaceNet(num_classes, Config, pretrained=False)
+        model.cuda()
+        if Config["channels_last"]:
+            model = model.to(memory_format=torch.channels_last)
+        checkpoint_path = model_dir / f"{exp_name}_f{on_fold}_score.pth"
+        epoch, _, _, _ = resume_checkpoint(model, checkpoint_path)
+        assert isinstance(epoch, int)
+        _, img_embeds = test_epoch(model, test_dl, epoch, Config, use_amp=True)
+        all_embeds.append(img_embeds)
+    all_embeds = torch.cat(all_embeds, dim=1)  # concatenate
+    return all_embeds
 
 
 def compute_matches(
