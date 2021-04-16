@@ -8,6 +8,7 @@ import torch
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from shopee.config import load_config_yaml
+from shopee.moco_model import ModelMoCo
 
 from .checkpoint_utils import resume_checkpoint
 from .datasets import init_dataloaders, init_datasets
@@ -23,11 +24,20 @@ def validate_fold(
     """Config should have `tfidf_args` key"""
     train_df = df[df["fold"] != fold].copy().reset_index(drop=True)
     val_df = df[df["fold"] == fold].copy().reset_index(drop=True)
-    train_ds, val_ds = init_datasets(Config, train_df, val_df, image_dir)
-    dataloaders = init_dataloaders(train_ds, val_ds, Config)
+    train_ds, val_ds = init_datasets(
+        Config, train_df, val_df, image_dir, is_moco=Config["moco"]
+    )
+    dataloaders = init_dataloaders(train_ds, val_ds, Config, is_moco=Config["moco"])
     num_classes = int(train_df[Config["target_col"]].max() + 1)
 
-    model = ArcFaceNet(num_classes, Config, pretrained=False)
+    if Config["moco"]:
+        model = ModelMoCo(
+            dim=Config["embed_size"],
+            arch=Config["arch"],
+            global_pool=Config["global_pool"],
+        )
+    else:
+        model = ArcFaceNet(num_classes, Config, pretrained=True)
     model.cuda()
     if Config["channels_last"]:
         model = model.to(memory_format=torch.channels_last)
@@ -36,7 +46,7 @@ def validate_fold(
     assert isinstance(epoch, int)
     assert isinstance(th, float)
     _, embeds, _ = validate_epoch(
-        model, dataloaders["val"], epoch, Config, use_amp=True
+        model, dataloaders["val"], epoch, Config, use_amp=True, is_moco=Config["moco"]
     )
     # image predictions
     img_score, pred_df = validate_score(val_df, embeds, th)
