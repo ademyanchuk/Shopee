@@ -102,6 +102,7 @@ class ModelMoCo(nn.Module):
         self.K = K
         self.m = m
         self.T = T
+        self.arch = arch
 
         # create the encoders
         self.encoder_q = ModelBase(
@@ -122,6 +123,9 @@ class ModelMoCo(nn.Module):
         self.queue = nn.functional.normalize(self.queue, dim=0)
 
         self.register_buffer("queue_ptr", torch.zeros(1, dtype=torch.long))
+
+    def __repr__(self):
+        return repr(self.__class__.__name__) + f" with backbone: {self.arch}"
 
     @torch.no_grad()
     def _momentum_update_key_encoder(self):
