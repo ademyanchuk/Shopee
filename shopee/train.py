@@ -454,10 +454,9 @@ def validate_batch(
         with autocast(enabled=use_amp):
             if is_moco:
                 outputs = model.encoder_q(inputs)
+                outputs = F.normalize(outputs)
             else:
                 outputs = model(inputs)
-        if is_moco:
-            outputs = F.normalize(outputs)
     # index into only main task classes (if aux task is used)
     return outputs, targets
 
