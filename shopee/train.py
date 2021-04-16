@@ -46,7 +46,9 @@ def train_eval_fold(
     # validation is allways on hard labels
     val_df = df[df["fold"] == args.fold].copy().reset_index(drop=True)
 
-    train_ds, val_ds = init_datasets(Config, train_df, val_df, image_dir, is_moco=Config["moco"])
+    train_ds, val_ds = init_datasets(
+        Config, train_df, val_df, image_dir, is_moco=Config["moco"]
+    )
     dataloaders = init_dataloaders(train_ds, val_ds, Config, is_moco=Config["moco"])
     logging.info(f"Data: train size: {len(train_ds)}, val_size: {len(val_ds)}")
 
@@ -194,6 +196,7 @@ def train_model(
             epoch,
             Config,
             use_amp,
+            Config["moco"],
         )
 
         val_score = np.nan
@@ -406,7 +409,12 @@ def train_batch_moco(
 
 
 def validate_epoch(
-    model: nn.Module, dataloader: DataLoader, epoch: int, Config: Any, use_amp: bool,
+    model: nn.Module,
+    dataloader: DataLoader,
+    epoch: int,
+    Config: Any,
+    use_amp: bool,
+    is_moco: bool = False,
 ):
     """We don't compute validation loss here as it has not much sense
        to check it on data from completly different classes. Instead
@@ -418,7 +426,9 @@ def validate_epoch(
     bar = tqdm(dataloader)
     for batch in bar:
         bar.set_description(f"Epoch {epoch} [validation]".ljust(20))
-        batch_logits, batch_targets = validate_batch(batch, model, Config, use_amp)
+        batch_logits, batch_targets = validate_batch(
+            batch, model, Config, use_amp, is_moco=is_moco
+        )
         epoch_logits.append(batch_logits)
         epoch_targets.append(batch_targets)
     # on epoch end
@@ -428,7 +438,7 @@ def validate_epoch(
 
 
 def validate_batch(
-    batch: Dict, model: nn.Module, Config: Any, use_amp: bool,
+    batch: Dict, model: nn.Module, Config: Any, use_amp: bool, is_moco: bool = False,
 ):
     """
     It returns also detached to cpu output tensor
@@ -441,7 +451,7 @@ def validate_batch(
     with torch.no_grad():
         with autocast(enabled=use_amp):
             outputs = model(inputs)
-        if Config["moco"]:
+        if is_moco:
             outputs = F.normalize(outputs)
     # index into only main task classes (if aux task is used)
     return outputs, targets
