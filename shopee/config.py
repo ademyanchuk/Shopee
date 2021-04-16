@@ -13,13 +13,13 @@ Config = {
     "bs": 32,
     "num_workers": 4,
     # model
-    "moco": False,
-    "arch": "nf_resnet50",
+    "moco": True,
+    "arch": "resnet50",
     "pretrained": True,
     "global_pool": "catavgmax",
     "embed_size": 256,
     "drop_rate": 0.0,
-    "model_kwargs": {"drop_path_rate": 0.2},
+    "model_kwargs": {"drop_path_rate": None},
     "bn_momentum": 0.1,  # default 0.1
     "channels_last": False,
     # ema
