@@ -260,7 +260,7 @@ def train_model(
             logging.info(f"Epoch {epoch} - Save @ score: {best_score:.4f}")
             save_checkpoint(
                 epoch,
-                model.encoder_q if Config["moco"] else model,
+                model,
                 optimizer,
                 MODELS_PATH,
                 exp_name + "_score",
