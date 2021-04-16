@@ -85,7 +85,7 @@ def main():
 
     full_df = pd.read_csv(META_PATH / args.train_csv)
     if Config["debug"]:
-        full_df = full_df.sample(n=5000, random_state=Config["seed"]).reset_index(
+        full_df = full_df.sample(n=2000, random_state=Config["seed"]).reset_index(
             drop=True
         )
 
