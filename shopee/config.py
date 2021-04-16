@@ -14,7 +14,7 @@ Config = {
     "num_workers": 4,
     # model
     "moco": True,
-    "arch": "resnet50",
+    "arch": "resnet50d",
     "pretrained": True,
     "global_pool": "catavgmax",
     "embed_size": 256,
