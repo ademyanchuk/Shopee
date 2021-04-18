@@ -8,19 +8,19 @@ Config = {
     # data
     "image_id_col": "image",
     "target_col": "target",
-    "img_size": 512,  # resize
+    "img_size": 1024,  # resize
     "crop_size": None,  # if none == img_size
-    "bs": 32,
+    "bs": 16,
     "num_workers": 4,
     # model
-    "moco": True,
-    "arch": "resnet50d",
+    "moco": False,
+    "arch": "tf_efficientnet_b1_ns",
     "pretrained": True,
     "global_pool": "catavgmax",
     "embed_size": 256,
     "drop_rate": 0.0,
-    "model_kwargs": {"drop_path_rate": None},
-    "bn_momentum": 0.1,  # default 0.1
+    "model_kwargs": {"drop_path_rate": 0.2},
+    "bn_momentum": 0.01,  # default 0.1
     "channels_last": False,
     # ema
     "model_ema": False,
@@ -30,9 +30,9 @@ Config = {
     "opt_conf": {"adam": {"lr": 5e-4, "weight_decay": 0.0}},
     "sch_conf": {
         "cosine": {
-            "t_initial": 10,
+            "t_initial": 20,
             "lr_min": 5e-7,
-            "warmup_t": 5,
+            "warmup_t": 10,
             "warmup_lr_init": 1e-6,
         }
     },
@@ -43,7 +43,7 @@ Config = {
     "aug_type": "albu",
     "rand_aug_severity": 5,
     "rand_aug_width": 5,
-    "num_epochs": 10,
+    "num_epochs": 20,
     "return_best": "score",
     "accum_grad": 1,
     "clip_grad": 1.0,  # norm of parameters grad
