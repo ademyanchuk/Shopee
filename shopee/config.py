@@ -10,7 +10,7 @@ Config = {
     "target_col": "target",
     "img_size": 1024,  # resize
     "crop_size": None,  # if none == img_size
-    "bs": 16,
+    "bs": 8,
     "num_workers": 4,
     # model
     "moco": False,
@@ -45,7 +45,7 @@ Config = {
     "rand_aug_width": 5,
     "num_epochs": 20,
     "return_best": "score",
-    "accum_grad": 1,
+    "accum_grad": 4,
     "clip_grad": 1.0,  # norm of parameters grad
     # text
     "tfidf_args": {
