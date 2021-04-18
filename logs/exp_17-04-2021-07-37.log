@@ -1,0 +1,60 @@
+Experiment: exp_17-04-2021-07-37
+Training with a single process on 1 GPUs.
+Git commit hash: 241c714
+Using CSV: /root/Projects/Shopee/meta_data/train_folds.csv
+NumExpr defaulting to 4 threads.
+Data: train size: 27399, val_size: 6851
+Loading pretrained weights from url (https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/resnet50d_ra2-464e36ba.pth)
+Loading pretrained weights from url (https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/resnet50d_ra2-464e36ba.pth)
+Model 'ModelMoCo' with backbone: resnet50d created, param count: 49_152_192
+Using optimizer: AdamW (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    eps: 1e-08
+    lr: 0.0005
+    weight_decay: 0.0
+)
+AMP: 'NativeScaler'
+Epoch 0 - avg train loss: 6.5432
+Epoch 0 - avg val score: 0.6533, th: nan
+epoch step: lr: 0.0000010
+Epoch 0 - Save @ score: 0.6533
+Epoch 1 - avg train loss: 5.8713
+Epoch 1 - avg val score: 0.6554, th: nan
+epoch step: lr: 0.0001008
+Epoch 1 - Save @ score: 0.6554
+Epoch 2 - avg train loss: 2.9252
+Epoch 2 - avg val score: 0.6991, th: nan
+epoch step: lr: 0.0002006
+Epoch 2 - Save @ score: 0.6991
+Epoch 3 - avg train loss: 1.8626
+Epoch 3 - avg val score: 0.7043, th: nan
+epoch step: lr: 0.0003004
+Epoch 3 - Save @ score: 0.7043
+Epoch 4 - avg train loss: 1.5210
+Epoch 4 - avg val score: 0.7053, th: nan
+epoch step: lr: 0.0004002
+Epoch 4 - Save @ score: 0.7053
+Epoch 5 - avg train loss: 1.3675
+Epoch 5 - avg val score: 0.6971, th: nan
+epoch step: lr: 0.0002503
+Epoch 6 - avg train loss: 1.1875
+Epoch 6 - avg val score: 0.7001, th: nan
+epoch step: lr: 0.0001731
+Epoch 7 - avg train loss: 1.0781
+Epoch 7 - avg val score: 0.6993, th: nan
+epoch step: lr: 0.0001035
+Epoch 8 - avg train loss: 1.0063
+Epoch 8 - avg val score: 0.7006, th: nan
+epoch step: lr: 0.0000482
+Epoch 9 - avg train loss: 0.9762
+Epoch 9 - avg val score: 0.7027, th: nan
+epoch step: lr: 0.0000127
+Loading pretrained weights from url (https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/resnet50d_ra2-464e36ba.pth)
+Loading pretrained weights from url (https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/resnet50d_ra2-464e36ba.pth)
+Restoring model state from checkpoint...
+Loaded checkpoint '/root/Projects/Shopee/models/exp_17-04-2021-07-37_f0_score.pth' (epoch 5)
+Image model score: 0.7050806086872722 [for exp: exp_17-04-2021-07-37, fold: 0]
+Text model score: 0.7171399165712931 [for exp: exp_17-04-2021-07-37, fold: 0]
+validation for fold: 0, score: 0.8107058565806654
