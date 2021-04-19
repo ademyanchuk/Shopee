@@ -68,7 +68,7 @@ def compute_matches(
         print(f"compute similarities for chunks {a} to {b}")
         sim = emb_tensor[a:b] @ emb_tensor.T
         stats = get_sim_stats_torch(sim)
-        quants = torch.quantile(stats, q=torch.tensor([0.6, 0.75, 0.9]))
+        quants = torch.quantile(stats, q=torch.tensor([0.3, 0.6, 0.9]))
         threshold = torch.stack([compute_thres(x, quants) for x in stats])
         threshold = threshold[:, None].cuda()
         selection = (sim > threshold).cpu().numpy()
