@@ -52,7 +52,7 @@ def binned_threshold_f1(embs: torch.Tensor, y: torch.Tensor):
     target_matrix = y[:, None] == y[None, :]
     sim_stats = get_sim_stats_torch(sims)
     print(sim_stats.shape, sim_stats.dtype)
-    quants = torch.quantile(sim_stats, q=torch.tensor([0.3, 0.6, 0.9]))
+    quants = torch.quantile(sim_stats, q=torch.tensor([0.6, 0.75, 0.9]))
     th = torch.stack([compute_thres(x, quants) for x in sim_stats])
     th = th[:, None].cuda()
     score = score_groups(sims > th, target_matrix)
@@ -103,10 +103,8 @@ def compute_thres(mean_sim, qunts, coeff=0.9):
         return qunts[0] * coeff
     elif mean_sim > qunts[0] and mean_sim <= qunts[1]:
         return qunts[1] * coeff
-    elif mean_sim > qunts[1] and mean_sim <= qunts[2]:
-        return qunts[2] * coeff
     else:
-        return qunts[3] * coeff
+        return qunts[2] * coeff
 
 
 def validate_score(df, embeeds, th, chunk_sz=0):
@@ -115,7 +113,7 @@ def validate_score(df, embeeds, th, chunk_sz=0):
     # add some similarity scores statistics before thresholding
     best25_mean = get_sim_stats(sims)
     df["best25_mean"] = best25_mean
-    qunts = np.quantile(df.best25_mean, q=[0.3, 0.6, 0.75, 0.9])
+    qunts = np.quantile(df.best25_mean, q=[0.6, 0.75, 0.9])
     th = df.apply(lambda x: compute_thres(x["best25_mean"], qunts), axis=1,)
     th = th.values[:, None]
     sims = sims > th
