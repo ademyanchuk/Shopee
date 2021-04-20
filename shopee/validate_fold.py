@@ -24,8 +24,16 @@ def validate_fold(
     """Config should have `tfidf_args` key"""
     train_df = df[df["fold"] != fold].copy().reset_index(drop=True)
     val_df = df[df["fold"] == fold].copy().reset_index(drop=True)
+
+    # check if config (maybe used to train past models) has arc face text key
+    try:
+        use_text = Config["arc_face_text"]
+    except KeyError:
+        print("Old models: set text input to False")
+        use_text = False
+
     train_ds, val_ds = init_datasets(
-        Config, train_df, val_df, image_dir, is_moco=Config["moco"]
+        Config, train_df, val_df, image_dir, is_moco=Config["moco"], use_text=use_text,
     )
     dataloaders = init_dataloaders(
         train_ds, val_ds, Config, is_moco=False
@@ -119,7 +127,15 @@ def validate_models_fold(
     embeds = []
     for exp_name in exp_names:
         Config = load_config_yaml(conf_dir, exp_name)
-        train_ds, val_ds = init_datasets(Config, train_df, val_df, image_dir)
+        # check if config (maybe used to train past models) has arc face text key
+        try:
+            use_text = Config["arc_face_text"]
+        except KeyError:
+            print("Old models: set text input to False")
+            use_text = False
+        train_ds, val_ds = init_datasets(
+            Config, train_df, val_df, image_dir, use_text=use_text
+        )
         dataloaders = init_dataloaders(train_ds, val_ds, Config)
         num_classes = int(train_df[Config["target_col"]].max() + 1)
 

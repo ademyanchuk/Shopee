@@ -62,7 +62,12 @@ class ArcFaceNet(nn.Module):
         self.fc1 = nn.Linear(num_features, Config["embed_size"])
         self.bn2 = nn.BatchNorm1d(Config["embed_size"])
 
-        text = Config["arc_face_text"]
+        # check if config (maybe used to train past models) has arc face text key
+        try:
+            text = Config["arc_face_text"]
+        except KeyError:
+            print("Old models: set text input to False")
+            text = False
         if text:
             assert isinstance(text, int)
             h_sz = text // 2
