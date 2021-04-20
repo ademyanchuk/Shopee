@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from shopee.config import load_config_yaml
-from shopee.metric import compute_thres, emb_sim, get_sim_stats, get_sim_stats_torch
+from shopee.metric import QUANTILES, compute_thres, get_sim_stats, get_sim_stats_torch
 
 from .checkpoint_utils import resume_checkpoint
 from .datasets import init_test_dataset
@@ -68,7 +68,7 @@ def compute_matches(
         print(f"compute similarities for chunks {a} to {b}")
         sim = emb_tensor[a:b] @ emb_tensor.T
         stats = get_sim_stats_torch(sim)
-        quants = torch.quantile(stats, q=torch.tensor([0.3, 0.6, 0.9]))
+        quants = torch.quantile(stats, q=torch.tensor(QUANTILES))
         threshold = torch.stack([compute_thres(x, quants) for x in stats])
         threshold = threshold[:, None].cuda()
         selection = (sim > threshold).cpu().numpy()
@@ -157,7 +157,7 @@ def predict_one_model(
         selection = (batch @ emb_tensor.T).cpu().numpy()
         batch_stats = get_sim_stats(selection)
         stats.append(batch_stats)
-    quants = np.quantile(np.concatenate(stats), q=[0.3, 0.6, 0.9])
+    quants = np.quantile(np.concatenate(stats), q=QUANTILES)
     matches = []
     for batch, stat in zip(emb_list, stats):
         threshold = pd.Series(stat).apply(lambda x: compute_thres(x, quants))
@@ -212,7 +212,7 @@ def predict_2_models(
         selection = (batch @ emb_tensors.T).cpu().numpy()
         batch_stats = get_sim_stats(selection)
         stats.append(batch_stats)
-    quants = np.quantile(np.concatenate(stats), q=[0.3, 0.6, 0.9])
+    quants = np.quantile(np.concatenate(stats), q=QUANTILES)
     matches = []
     for batch, stat in zip(emb_lists, stats):
         threshold = pd.Series(stat).apply(lambda x: compute_thres(x, quants))

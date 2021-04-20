@@ -4,6 +4,10 @@ import pandas as pd
 import torch
 from torch.nn import functional as F
 
+# define them only here, reuse in the code
+QUANTILES = [0.6, 0.75, 0.9]
+NUM_BEST_MATCHES = 10
+
 
 # Cosine similiarity across all pairs of rows
 def emb_sim(inp, chunk_sz=0):
@@ -52,7 +56,7 @@ def binned_threshold_f1(embs: torch.Tensor, y: torch.Tensor):
     target_matrix = y[:, None] == y[None, :]
     sim_stats = get_sim_stats_torch(sims)
     print(sim_stats.shape, sim_stats.dtype)
-    quants = torch.quantile(sim_stats, q=torch.tensor([0.3, 0.6, 0.9]))
+    quants = torch.quantile(sim_stats, q=torch.tensor(QUANTILES))
     th = torch.stack([compute_thres(x, quants) for x in sim_stats])
     th = th[:, None].cuda()
     score = score_groups(sims > th, target_matrix)
@@ -85,7 +89,7 @@ def row_wise_f1_score(labels, preds):
 def get_sim_stats(sims):
     best25_mean = []
     for sim in sims:
-        best25_ids = np.argsort(sim)[-6:]
+        best25_ids = np.argsort(sim)[-NUM_BEST_MATCHES:]
         best25_mean.append(np.mean(sim[best25_ids]))
     return best25_mean
 
@@ -93,7 +97,7 @@ def get_sim_stats(sims):
 def get_sim_stats_torch(sims: torch.Tensor):
     best_mean = []
     for sim in sims:
-        best_ids = torch.argsort(sim)[-6:]
+        best_ids = torch.argsort(sim)[-NUM_BEST_MATCHES:]
         best_mean.append(torch.mean(sim[best_ids]))
     return torch.tensor(best_mean)
 
@@ -113,7 +117,7 @@ def validate_score(df, embeeds, th, chunk_sz=0):
     # add some similarity scores statistics before thresholding
     best25_mean = get_sim_stats(sims)
     df["best25_mean"] = best25_mean
-    qunts = np.quantile(df.best25_mean, q=[0.3, 0.6, 0.9])
+    qunts = np.quantile(df.best25_mean, q=QUANTILES)
     th = df.apply(lambda x: compute_thres(x["best25_mean"], qunts), axis=1,)
     th = th.values[:, None]
     sims = sims > th
