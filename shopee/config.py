@@ -3,7 +3,7 @@ from pathlib import Path
 import yaml
 
 Config = {
-    "debug": False,
+    "debug": True,
     "seed": 42,
     # data
     "image_id_col": "image",
@@ -14,6 +14,7 @@ Config = {
     "num_workers": 4,
     # model
     "moco": False,
+    "arc_face_text": False,
     "arch": "tf_efficientnet_b1_ns",
     "pretrained": True,
     "global_pool": "catavgmax",
@@ -43,9 +44,9 @@ Config = {
     "aug_type": "albu",
     "rand_aug_severity": 5,
     "rand_aug_width": 5,
-    "num_epochs": 20,
+    "num_epochs": 2,
     "return_best": "score",
-    "accum_grad": 4,
+    "accum_grad": 1,
     "clip_grad": 1.0,  # norm of parameters grad
     # text
     "tfidf_args": {
