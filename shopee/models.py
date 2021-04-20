@@ -1,3 +1,4 @@
+from typing import Union
 import timm
 import torch
 from torch import nn
@@ -35,7 +36,12 @@ class ArcFaceLayer(nn.Module):
 
 
 class ArcFaceNet(nn.Module):
-    def __init__(self, num_classes: int, Config: dict, pretrained: bool):
+    def __init__(
+        self,
+        num_classes: int,
+        Config: dict,
+        pretrained: bool,
+    ):
         super(ArcFaceNet, self).__init__()
         self.backbone = timm_backbone(
             f_out=0,
@@ -56,19 +62,35 @@ class ArcFaceNet(nn.Module):
         self.fc1 = nn.Linear(num_features, Config["embed_size"])
         self.bn2 = nn.BatchNorm1d(Config["embed_size"])
 
-        self.margin = ArcFaceLayer(
-            emb_size=Config["embed_size"], output_classes=num_classes
-        )
+        text = Config["arc_face_text"]
+        if text:
+            assert isinstance(text, int)
+            h_sz = text // 2
+            self.text_head = nn.Sequential(
+                nn.Linear(text, h_sz),
+                nn.ReLU(inplace=True),
+                nn.BatchNorm1d(h_sz),
+                nn.Dropout(Config["drop_rate"], inplace=True),
+                nn.Linear(h_sz, Config["embed_size"]),
+            )
+        arc_in = Config["embed_size"]
+        if text:
+            arc_in *= 2
+
+        self.margin = ArcFaceLayer(emb_size=arc_in, output_classes=num_classes)
 
     def __repr__(self):
         return repr(self.__class__.__name__) + f" with backbone: {self.arch}"
 
-    def forward(self, x):
+    def forward(self, x, text=None):
         features = self.backbone(x)
         features = self.bn1(features)
         features = self.dropout(features)
         features = self.fc1(features)
         features = self.bn2(features)
+        if text is not None:
+            text_features = self.text_head(text)
+            features = torch.cat([features, text_features], dim=1)
         if self.training:
             return self.margin(features)
         return F.normalize(features)
