@@ -48,7 +48,12 @@ def train_eval_fold(
     val_df = df[df["fold"] == args.fold].copy().reset_index(drop=True)
 
     train_ds, val_ds = init_datasets(
-        Config, train_df, val_df, image_dir, is_moco=Config["moco"]
+        Config,
+        train_df,
+        val_df,
+        image_dir,
+        is_moco=Config["moco"],
+        use_text=Config["arc_face_text"],
     )
     dataloaders = init_dataloaders(train_ds, val_ds, Config, is_moco=Config["moco"])
     logging.info(f"Data: train size: {len(train_ds)}, val_size: {len(val_ds)}")
@@ -146,7 +151,6 @@ def train_model(
     resume_score: Optional[float],
 ) -> Optional[float]:
     """Train, validate, collect metrics, and save checkpoint"""
-
     return_best = Config["return_best"]
     assert return_best in [
         "loss",
@@ -192,12 +196,7 @@ def train_model(
             model_ema,
         )
         val_loss, val_logits, val_targets = validate_epoch(
-            model,
-            dataloaders["val"],
-            epoch,
-            Config,
-            use_amp,
-            Config["moco"],
+            model, dataloaders["val"], epoch, Config, use_amp, Config["moco"],
         )
 
         val_score = np.nan
@@ -332,6 +331,12 @@ def train_batch(
     if Config["channels_last"]:
         inputs = inputs.contiguous(memory_format=torch.channels_last)
     targets = batch["label"].cuda()
+
+    try:
+        text = batch["text"].cuda()
+    except KeyError:
+        # dataset doesn't provide text = set to None
+        text = None
     # try to define weights
     try:
         weights = batch["weights"].cuda()
@@ -339,7 +344,7 @@ def train_batch(
         # dataset doesn't provide weights = set to None
         weights = None
     with autocast(enabled=use_amp):
-        outputs = model(inputs)
+        outputs = model(inputs, text)
         criterion.weight = weights
         loss = criterion(outputs, targets)
     # backward and update
@@ -450,13 +455,18 @@ def validate_batch(
     if Config["channels_last"]:
         inputs = inputs.contiguous(memory_format=torch.channels_last)
     targets = batch["label"].cuda()
+    try:
+        text = batch["text"].cuda()
+    except KeyError:
+        # dataset doesn't provide text = set to None
+        text = None
     with torch.no_grad():
         with autocast(enabled=use_amp):
             if is_moco:
                 outputs = model.encoder_q(inputs)
                 outputs = F.normalize(outputs)
             else:
-                outputs = model(inputs)
+                outputs = model(inputs, text)
     # index into only main task classes (if aux task is used)
     return outputs, targets
 
