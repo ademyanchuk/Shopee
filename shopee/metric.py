@@ -5,8 +5,8 @@ import torch
 from torch.nn import functional as F
 
 # define them only here, reuse in the code
-QUANTILES = [0.6, 0.75, 0.9]
-NUM_BEST_MATCHES = 10
+QUANTILES = [0.3, 0.6, 0.9]
+NUM_BEST_MATCHES = 6
 
 
 # Cosine similiarity across all pairs of rows
