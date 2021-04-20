@@ -52,7 +52,7 @@ def binned_threshold_f1(embs: torch.Tensor, y: torch.Tensor):
     target_matrix = y[:, None] == y[None, :]
     sim_stats = get_sim_stats_torch(sims)
     print(sim_stats.shape, sim_stats.dtype)
-    quants = torch.quantile(sim_stats, q=torch.tensor([0.6, 0.75, 0.9]))
+    quants = torch.quantile(sim_stats, q=torch.tensor([0.3, 0.6, 0.9]))
     th = torch.stack([compute_thres(x, quants) for x in sim_stats])
     th = th[:, None].cuda()
     score = score_groups(sims > th, target_matrix)
@@ -85,7 +85,7 @@ def row_wise_f1_score(labels, preds):
 def get_sim_stats(sims):
     best25_mean = []
     for sim in sims:
-        best25_ids = np.argsort(sim)[-10:]
+        best25_ids = np.argsort(sim)[-3:]
         best25_mean.append(np.mean(sim[best25_ids]))
     return best25_mean
 
@@ -93,7 +93,7 @@ def get_sim_stats(sims):
 def get_sim_stats_torch(sims: torch.Tensor):
     best_mean = []
     for sim in sims:
-        best_ids = torch.argsort(sim)[-10:]
+        best_ids = torch.argsort(sim)[-3:]
         best_mean.append(torch.mean(sim[best_ids]))
     return torch.tensor(best_mean)
 
