@@ -8,9 +8,9 @@ Config = {
     # data
     "image_id_col": "image",
     "target_col": "target",
-    "img_size": 1024,  # resize
+    "img_size": 512,  # resize
     "crop_size": None,  # if none == img_size
-    "bs": 8,
+    "bs": 32,
     "num_workers": 4,
     # model
     "moco": False,
@@ -20,7 +20,7 @@ Config = {
     "embed_size": 256,
     "drop_rate": 0.0,
     "model_kwargs": {"drop_path_rate": 0.2},
-    "bn_momentum": 0.01,  # default 0.1
+    "bn_momentum": 0.1,  # default 0.1
     "channels_last": False,
     # ema
     "model_ema": False,
@@ -38,7 +38,7 @@ Config = {
     },
     # loss
     "s": 30,  # arcface s scalar
-    "m": 0.5,  # arcface margin
+    "m": 0.25,  # arcface margin
     # train
     "aug_type": "albu",
     "rand_aug_severity": 5,
