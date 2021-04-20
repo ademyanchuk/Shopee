@@ -1,4 +1,6 @@
 from pathlib import Path
+
+from sklearn.feature_extraction.text import TfidfVectorizer
 from shopee.rand_aug import make_aug
 
 import numpy as np
@@ -8,6 +10,7 @@ from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 
 from .img_augs import make_albu_augs
+from .config import Config
 
 
 class ShImageDataset(Dataset):
@@ -19,6 +22,7 @@ class ShImageDataset(Dataset):
         target_col: str,
         is_test: bool,
         transform=None,
+        text: bool = False,
     ):
         self.df = df
         self.image_dir = image_dir
@@ -28,6 +32,13 @@ class ShImageDataset(Dataset):
         if not is_test:
             self.labels = df[target_col].values
         self.transform = transform
+
+        self.text = text
+        if self.text:
+            model_txt = TfidfVectorizer(**Config["tfidf_args"])
+            self.text_embeds = (
+                model_txt.fit_transform(df["title"]).toarray().astype(np.float32)
+            )
 
     def _get_img_path(self, idx: int) -> Path:
         image_id = self.df.loc[idx, self.image_id_col]
@@ -55,6 +66,8 @@ class ShImageDataset(Dataset):
             image = self.transform(image=image)["image"]
 
         data["image"] = image
+        if self.text:
+            data["text"] = torch.from_numpy(self.text_embeds[idx])
         if self.is_test:
             return data
 
@@ -135,7 +148,12 @@ def init_augs(Config: dict):
 
 
 def init_datasets(
-    Config: dict, train_df: pd.DataFrame, val_df: pd.DataFrame, image_dir: Path, is_moco: bool = False,
+    Config: dict,
+    train_df: pd.DataFrame,
+    val_df: pd.DataFrame,
+    image_dir: Path,
+    is_moco: bool = False,
+    use_text=False,
 ):
     train_aug, val_aug = init_augs(Config)
     if is_moco:
@@ -153,6 +171,7 @@ def init_datasets(
             target_col=Config["target_col"],
             is_test=False,
             transform=train_aug,
+            text=use_text,
         )
     val_ds = ShImageDataset(
         val_df,
@@ -161,6 +180,7 @@ def init_datasets(
         target_col=Config["target_col"],
         is_test=False,
         transform=val_aug,
+        text=use_text,
     )
     return train_ds, val_ds
 
@@ -179,7 +199,12 @@ def init_test_dataset(Config: dict, df: pd.DataFrame, image_dir: Path):
     )
 
 
-def init_dataloaders(train_ds: ShImageDataset, val_ds: ShImageDataset, Config: dict, is_moco: bool = False):
+def init_dataloaders(
+    train_ds: ShImageDataset,
+    val_ds: ShImageDataset,
+    Config: dict,
+    is_moco: bool = False,
+):
     return {
         "train": DataLoader(
             train_ds,
