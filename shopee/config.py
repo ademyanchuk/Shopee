@@ -14,7 +14,7 @@ Config = {
     "num_workers": 4,
     # model
     "moco": False,
-    "arc_face_text": 5120,
+    "arc_face_text": False,
     "arch": "tf_efficientnet_b1_ns",
     "pretrained": True,
     "global_pool": "catavgmax",
@@ -39,7 +39,7 @@ Config = {
     },
     # loss
     "s": 30,  # arcface s scalar
-    "m": 0.5,  # arcface margin
+    "m": 0.25,  # arcface margin
     # train
     "aug_type": "albu",
     "rand_aug_severity": 5,
