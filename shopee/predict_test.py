@@ -32,7 +32,13 @@ def get_image_embeds(
     all_embeds = []
     for exp_name in exp_names:
         Config = load_config_yaml(conf_dir, exp_name)
-        test_ds = init_test_dataset(Config, df, image_dir)
+        # check if config (maybe used to train past models) has arc face text key
+        try:
+            use_text = Config["arc_face_text"]
+        except KeyError:
+            print("Old models: set text input to False")
+            use_text = False
+        test_ds = init_test_dataset(Config, df, image_dir, text=use_text)
         test_dl = DataLoader(
             test_ds,
             batch_size=Config["bs"],
@@ -245,9 +251,14 @@ def test_batch(
     and targets tensor
     """
     inputs = batch["image"].cuda()
+    try:
+        text = batch["text"].cuda()
+    except KeyError:
+        # dataset doesn't provide text = set to None
+        text = None
     if Config["channels_last"]:
         inputs = inputs.contiguous(memory_format=torch.channels_last)
     with torch.no_grad():
         with autocast(enabled=use_amp):
-            outputs = model(inputs)
+            outputs = model(inputs, text)
     return outputs

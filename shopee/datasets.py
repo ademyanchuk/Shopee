@@ -185,7 +185,9 @@ def init_datasets(
     return train_ds, val_ds
 
 
-def init_test_dataset(Config: dict, df: pd.DataFrame, image_dir: Path):
+def init_test_dataset(
+    Config: dict, df: pd.DataFrame, image_dir: Path, text: bool = False
+):
     test_aug = make_albu_augs(
         img_size=Config["img_size"], crop_size=Config["crop_size"], mode="test"
     )
@@ -196,6 +198,7 @@ def init_test_dataset(Config: dict, df: pd.DataFrame, image_dir: Path):
         target_col="",
         is_test=True,
         transform=test_aug,
+        text=text,
     )
 
 
