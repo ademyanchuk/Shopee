@@ -44,7 +44,7 @@ Config = {
     "aug_type": "albu",
     "rand_aug_severity": 5,
     "rand_aug_width": 5,
-    "num_epochs": 2,
+    "num_epochs": 20,
     "return_best": "score",
     "accum_grad": 1,
     "clip_grad": 1.0,  # norm of parameters grad
