@@ -19,8 +19,8 @@ Config = {
     "pretrained": True,
     "global_pool": "catavgmax",
     "embed_size": 256,
-    "drop_rate": 0.0,
-    "model_kwargs": {"drop_path_rate": 0.2},
+    "drop_rate": 0.3,
+    "model_kwargs": {"drop_path_rate": 0.3},
     "bn_momentum": 0.1,  # default 0.1
     "channels_last": False,
     # ema
