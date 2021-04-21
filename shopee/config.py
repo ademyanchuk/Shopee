@@ -3,7 +3,7 @@ from pathlib import Path
 import yaml
 
 Config = {
-    "debug": True,
+    "debug": False,
     "seed": 42,
     # data
     "image_id_col": "image",
@@ -14,7 +14,7 @@ Config = {
     "num_workers": 4,
     # model
     "moco": False,
-    "arc_face_text": False,
+    "arc_face_text": 5120,
     "arch": "tf_efficientnet_b1_ns",
     "pretrained": True,
     "global_pool": "catavgmax",
@@ -39,7 +39,7 @@ Config = {
     },
     # loss
     "s": 30,  # arcface s scalar
-    "m": 0.25,  # arcface margin
+    "m": 0.5,  # arcface margin
     # train
     "aug_type": "albu",
     "rand_aug_severity": 5,
