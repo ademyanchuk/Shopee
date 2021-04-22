@@ -105,7 +105,7 @@ class ShTextDataset(Dataset):
 
     def __getitem__(self, idx: int):
         data = {}
-        text = self.df.loc["title", idx]
+        text = self.df.loc[idx, "title"]
         text = self.tokenizer(
             text,
             padding="max_length",
