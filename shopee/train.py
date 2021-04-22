@@ -185,7 +185,12 @@ def train_model(
             model_ema,
         )
         val_loss, val_logits, val_targets = validate_epoch(
-            model, dataloaders["val"], epoch, Config, use_amp, Config["moco"],
+            model,
+            dataloaders["val"],
+            epoch,
+            Config,
+            use_amp,
+            is_bert=Config["arc_face_text"],
         )
 
         val_score = np.nan
