@@ -113,8 +113,8 @@ class ShTextDataset(Dataset):
             max_length=64,
             return_tensors="pt",
         )
-        data["input_ids"] = text["input_ids"]
-        data["attention_mask"] = text["attention_mask"]
+        data["input_ids"] = text["input_ids"][0]
+        data["attention_mask"] = text["attention_mask"][0]
         if self.is_test:
             return data
 
