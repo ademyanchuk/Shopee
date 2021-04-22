@@ -3,6 +3,7 @@ import timm
 import torch
 from torch import nn
 from torch.nn import functional as F
+from transformers import AutoModel
 
 
 def timm_backbone(
@@ -37,10 +38,7 @@ class ArcFaceLayer(nn.Module):
 
 class ArcFaceNet(nn.Module):
     def __init__(
-        self,
-        num_classes: int,
-        Config: dict,
-        pretrained: bool,
+        self, num_classes: int, Config: dict, pretrained: bool,
     ):
         super(ArcFaceNet, self).__init__()
         self.backbone = timm_backbone(
@@ -62,40 +60,75 @@ class ArcFaceNet(nn.Module):
         self.fc1 = nn.Linear(num_features, Config["embed_size"])
         self.bn2 = nn.BatchNorm1d(Config["embed_size"])
 
-        # check if config (maybe used to train past models) has arc face text key
-        try:
-            text = Config["arc_face_text"]
-        except KeyError:
-            print("Old models: set text input to False")
-            text = False
-        if text:
-            assert isinstance(text, int)
-            h_sz = text // 2
-            self.text_head = nn.Sequential(
-                nn.Linear(text, h_sz),
-                nn.ReLU(inplace=True),
-                nn.BatchNorm1d(h_sz),
-                nn.Dropout(Config["drop_rate"], inplace=True),
-                nn.Linear(h_sz, Config["embed_size"]),
-            )
-        arc_in = Config["embed_size"]
-        if text:
-            arc_in *= 2
-
-        self.margin = ArcFaceLayer(emb_size=arc_in, output_classes=num_classes)
+        self.margin = ArcFaceLayer(
+            emb_size=Config["embed_size"], output_classes=num_classes
+        )
 
     def __repr__(self):
         return repr(self.__class__.__name__) + f" with backbone: {self.arch}"
 
-    def forward(self, x, text=None):
+    def forward(self, x):
         features = self.backbone(x)
         features = self.bn1(features)
         features = self.dropout(features)
         features = self.fc1(features)
         features = self.bn2(features)
-        if text is not None:
-            text_features = self.text_head(text)
-            features = torch.cat([features, text_features], dim=1)
         if self.training:
             return self.margin(features)
         return F.normalize(features)
+
+
+class ArcFaceBert(nn.Module):
+    def __init__(
+        self, num_classes: int, Config: dict, pretrained: bool,
+    ):
+        super(ArcFaceBert, self).__init__()
+        self.arch = Config["bert_name"]
+        self.backbone = AutoModel(self.arch)
+        num_features = self.backbone.config.hidden_size
+
+        self.bn1 = nn.BatchNorm1d(num_features)
+        self.dropout = nn.Dropout(Config["drop_rate"], inplace=True)
+        self.fc1 = nn.Linear(num_features, Config["embed_size"])
+        self.bn2 = nn.BatchNorm1d(Config["embed_size"])
+
+        self.margin = ArcFaceLayer(
+            emb_size=Config["embed_size"], output_classes=num_classes
+        )
+
+    def __repr__(self):
+        return repr(self.__class__.__name__) + f" with backbone: {self.arch}"
+
+    def mean_pooling(self, model_output, attention_mask):
+        # First element of model_output contains all token embeddings
+        token_embeddings = model_output[0]
+        input_mask_expanded = (
+            attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
+        )
+        sum_embeddings = torch.sum(token_embeddings * input_mask_expanded, 1)
+        sum_mask = torch.clamp(input_mask_expanded.sum(1), min=1e-9)
+        return sum_embeddings / sum_mask
+
+    def forward(self, input_ids, attention_mask):
+        features = self.backbone(input_ids=input_ids, attention_mask=attention_mask)
+        features = self.mean_pooling(features, attention_mask)
+        features = self.bn1(features)
+        features = self.dropout(features)
+        features = self.fc1(features)
+        features = self.bn2(features)
+        if self.training:
+            return self.margin(features)
+        return F.normalize(features)
+
+
+def init_model(num_classes: int, Config: dict, pretrained: bool):
+    # work with old and new configs
+    try:
+        is_bert = Config["arc_face_text"]
+    except KeyError:
+        print("Old Config: setting BERT to False")
+        is_bert = False
+    if is_bert:
+        return ArcFaceBert(num_classes, Config, pretrained)
+    else:
+        return ArcFaceNet(num_classes, Config, pretrained)
