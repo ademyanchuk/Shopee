@@ -41,6 +41,8 @@ def make_albu_augs(img_size: int, crop_size: Optional[int], mode: str):
                     ],
                     p=0.4,
                 ),
+                A.ToGray(p=0.5),
+                A.ToSepia(p=0.5),
                 A.Cutout(
                     max_h_size=int(crop_size * 0.075),
                     max_w_size=int(crop_size * 0.075),
