@@ -1,16 +1,18 @@
 from pathlib import Path
-
-from sklearn.feature_extraction.text import TfidfVectorizer
-from shopee.rand_aug import make_aug
+from typing import Union
 
 import numpy as np
 import pandas as pd
 import torch
 from PIL import Image
+from sklearn.feature_extraction.text import TfidfVectorizer
 from torch.utils.data import DataLoader, Dataset
+from transformers import AutoTokenizer
 
-from .img_augs import make_albu_augs
+from shopee.rand_aug import make_aug
+
 from .config import Config
+from .img_augs import make_albu_augs
 
 
 class ShImageDataset(Dataset):
@@ -68,6 +70,51 @@ class ShImageDataset(Dataset):
         data["image"] = image
         if self.text:
             data["text"] = torch.from_numpy(self.text_embeds[idx])
+        if self.is_test:
+            return data
+
+        # train mode
+        label = torch.tensor(self.labels[idx]).long()
+        data["label"] = label
+
+        return data
+
+
+class ShTextDataset(Dataset):
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        target_col: str,
+        is_test: bool,
+        tok_name_or_path: Union[str, Path],
+    ):
+        self.df = df
+        self.is_test = is_test
+        self.labels = None
+        if not is_test:
+            self.labels = df[target_col].values
+        self.tokenizer = AutoTokenizer.from_pretrained(tok_name_or_path)
+
+    @property
+    def num_classes(self):
+        if self.labels is not None:
+            return len(np.unique(self.labels))
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, idx: int):
+        data = {}
+        text = self.df.loc["title", idx]
+        text = self.tokenizer(
+            text,
+            padding="max_length",
+            truncation=True,
+            max_length=64,
+            return_tensors="pt",
+        )
+        data["input_ids"] = text["input_ids"]
+        data["attention_mask"] = text["attention_mask"]
         if self.is_test:
             return data
 
@@ -152,18 +199,25 @@ def init_datasets(
     train_df: pd.DataFrame,
     val_df: pd.DataFrame,
     image_dir: Path,
-    is_moco: bool = False,
-    use_text=False,
+    txt_mod_name_or_path: Union[str, Path],
+    use_text: bool = False,
 ):
-    train_aug, val_aug = init_augs(Config)
-    if is_moco:
-        train_ds = ShMocoDataset(
-            train_df,
-            image_dir,
-            image_id_col=Config["image_id_col"],
-            transform=train_aug,
+    if use_text:
+        # use bert dataset
+        train_ds = ShTextDataset(
+            df=train_df,
+            target_col=Config["target_col"],
+            is_test=False,
+            tok_name_or_path=txt_mod_name_or_path,
+        )
+        val_ds = ShTextDataset(
+            df=val_df,
+            target_col=Config["target_col"],
+            is_test=False,
+            tok_name_or_path=txt_mod_name_or_path,
         )
     else:
+        train_aug, val_aug = init_augs(Config)
         train_ds = ShImageDataset(
             train_df,
             image_dir,
@@ -171,17 +225,15 @@ def init_datasets(
             target_col=Config["target_col"],
             is_test=False,
             transform=train_aug,
-            text=use_text,
         )
-    val_ds = ShImageDataset(
-        val_df,
-        image_dir,
-        image_id_col=Config["image_id_col"],
-        target_col=Config["target_col"],
-        is_test=False,
-        transform=val_aug,
-        text=use_text,
-    )
+        val_ds = ShImageDataset(
+            val_df,
+            image_dir,
+            image_id_col=Config["image_id_col"],
+            target_col=Config["target_col"],
+            is_test=False,
+            transform=val_aug,
+        )
     return train_ds, val_ds
 
 
