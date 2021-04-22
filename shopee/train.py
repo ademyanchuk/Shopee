@@ -23,7 +23,7 @@ from shopee.datasets import init_dataloaders, init_datasets
 from shopee.losses import ArcFaceLoss
 from shopee.metric import binned_threshold_f1, treshold_finder
 from shopee.moco_model import ModelMoCo
-from shopee.models import ArcFaceNet
+from shopee.models import ArcFaceNet, init_model
 from shopee.optimizers import init_optimizer, init_scheduler
 from shopee.paths import LOGS_PATH, MODELS_PATH, ON_DRIVE_PATH
 
@@ -52,21 +52,14 @@ def train_eval_fold(
         train_df,
         val_df,
         image_dir,
-        is_moco=Config["moco"],
+        txt_mod_name_or_path=Config["bert_name"],
         use_text=Config["arc_face_text"],
     )
-    dataloaders = init_dataloaders(train_ds, val_ds, Config, is_moco=Config["moco"])
+    dataloaders = init_dataloaders(train_ds, val_ds, Config)
     logging.info(f"Data: train size: {len(train_ds)}, val_size: {len(val_ds)}")
 
     num_classes = int(train_df[Config["target_col"]].max() + 1)
-    if Config["moco"]:
-        model = ModelMoCo(
-            dim=Config["embed_size"],
-            arch=Config["arch"],
-            global_pool=Config["global_pool"],
-        )
-    else:
-        model = ArcFaceNet(num_classes, Config, pretrained=True)
+    model = init_model(num_classes, Config, pretrained=True)
     logging.info(
         f"Model {model} created, param count: {sum([m.numel() for m in model.parameters()]):_}"
     )
@@ -109,11 +102,7 @@ def train_eval_fold(
             f"""after resume and step: lr - {optimizer.param_groups[0]['lr']},
             initial lr -{optimizer.param_groups[0]['initial_lr']}"""
         )
-    if Config["moco"]:
-        tr_criterion = nn.CrossEntropyLoss()
-    else:
-        # Define loss function (no sense to check val loss in ArcFace setting with new groups)
-        tr_criterion = ArcFaceLoss(num_classes, s=Config["s"], m=Config["m"])
+    tr_criterion = ArcFaceLoss(num_classes, s=Config["s"], m=Config["m"])
 
     result = train_model(
         model=model,
@@ -292,8 +281,8 @@ def train_epoch(
     model.train()
     optimizer.zero_grad()  # if use accum_grad > 1
     train_batch_fn = train_batch
-    if Config["moco"]:
-        train_batch_fn = train_batch_moco
+    if Config["arc_face_text"]:
+        train_batch_fn = train_batch_bert
     running_loss = 0.0
     bar = tqdm(dataloader)
     for step, batch in enumerate(bar, start=1):
@@ -331,12 +320,6 @@ def train_batch(
     if Config["channels_last"]:
         inputs = inputs.contiguous(memory_format=torch.channels_last)
     targets = batch["label"].cuda()
-
-    try:
-        text = batch["text"].cuda()
-    except KeyError:
-        # dataset doesn't provide text = set to None
-        text = None
     # try to define weights
     try:
         weights = batch["weights"].cuda()
@@ -344,7 +327,7 @@ def train_batch(
         # dataset doesn't provide weights = set to None
         weights = None
     with autocast(enabled=use_amp):
-        outputs = model(inputs, text)
+        outputs = model(inputs)
         criterion.weight = weights
         loss = criterion(outputs, targets)
     # backward and update
@@ -368,7 +351,7 @@ def train_batch(
     return loss.item()
 
 
-def train_batch_moco(
+def train_batch_bert(
     batch: Dict,
     model: nn.Module,
     optimizer: optim.Optimizer,
@@ -379,11 +362,11 @@ def train_batch_moco(
     model_ema: Optional[nn.Module],
     step: int,
 ) -> float:
-    image1 = batch["image1"].cuda()
-    image2 = batch["image2"].cuda()
+    input_ids = batch["input_ids"].cuda()
+    attention_mask = batch["attention_mask"].cuda()
+    targets = batch["label"].cuda()
     if Config["channels_last"]:
-        image1 = image1.contiguous(memory_format=torch.channels_last)
-        image2 = image2.contiguous(memory_format=torch.channels_last)
+        raise NotImplementedError
     # try to define weights
     try:
         weights = batch["weights"].cuda()
@@ -391,7 +374,7 @@ def train_batch_moco(
         # dataset doesn't provide weights = set to None
         weights = None
     with autocast(enabled=use_amp):
-        outputs, targets = model(image1, image2)
+        outputs = model(input_ids, attention_mask)
         criterion.weight = weights
         loss = criterion(outputs, targets)
     # backward and update
@@ -421,7 +404,7 @@ def validate_epoch(
     epoch: int,
     Config: Any,
     use_amp: bool,
-    is_moco: bool = False,
+    is_bert: bool = False,
 ):
     """We don't compute validation loss here as it has not much sense
        to check it on data from completly different classes. Instead
@@ -430,12 +413,13 @@ def validate_epoch(
     model.eval()
     epoch_logits = []
     epoch_targets = []
+    validate_batch_fn = validate_batch
+    if is_bert:
+        validate_batch_fn = validate_batch_bert
     bar = tqdm(dataloader)
     for batch in bar:
         bar.set_description(f"Epoch {epoch} [validation]".ljust(20))
-        batch_logits, batch_targets = validate_batch(
-            batch, model, Config, use_amp, is_moco=is_moco
-        )
+        batch_logits, batch_targets = validate_batch_fn(batch, model, Config, use_amp)
         epoch_logits.append(batch_logits)
         epoch_targets.append(batch_targets)
     # on epoch end
@@ -445,7 +429,7 @@ def validate_epoch(
 
 
 def validate_batch(
-    batch: Dict, model: nn.Module, Config: Any, use_amp: bool, is_moco: bool = False,
+    batch: Dict, model: nn.Module, Config: Any, use_amp: bool,
 ):
     """
     It returns also detached to cpu output tensor
@@ -455,18 +439,28 @@ def validate_batch(
     if Config["channels_last"]:
         inputs = inputs.contiguous(memory_format=torch.channels_last)
     targets = batch["label"].cuda()
-    try:
-        text = batch["text"].cuda()
-    except KeyError:
-        # dataset doesn't provide text = set to None
-        text = None
     with torch.no_grad():
         with autocast(enabled=use_amp):
-            if is_moco:
-                outputs = model.encoder_q(inputs)
-                outputs = F.normalize(outputs)
-            else:
-                outputs = model(inputs, text)
+            outputs = model(inputs)
+    # index into only main task classes (if aux task is used)
+    return outputs, targets
+
+
+def validate_batch_bert(
+    batch: Dict, model: nn.Module, Config: Any, use_amp: bool,
+):
+    """
+    It returns also detached to cpu output tensor
+    and targets tensor
+    """
+    input_ids = batch["input_ids"].cuda()
+    attention_mask = batch["attention_mask"].cuda()
+    targets = batch["label"].cuda()
+    if Config["channels_last"]:
+        raise NotImplementedError
+    with torch.no_grad():
+        with autocast(enabled=use_amp):
+            outputs = model(input_ids, attention_mask)
     # index into only main task classes (if aux task is used)
     return outputs, targets
 
