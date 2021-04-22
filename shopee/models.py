@@ -84,7 +84,7 @@ class ArcFaceBert(nn.Module):
     ):
         super(ArcFaceBert, self).__init__()
         self.arch = Config["bert_name"]
-        self.backbone = AutoModel(self.arch)
+        self.backbone = AutoModel.from_pretrained(self.arch)
         num_features = self.backbone.config.hidden_size
 
         self.bn1 = nn.BatchNorm1d(num_features)
