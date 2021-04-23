@@ -10,7 +10,7 @@ Config = {
     "target_col": "target",
     "img_size": 512,  # resize
     "crop_size": None,  # if none == img_size
-    "bs": 64,
+    "bs": 128,
     "num_workers": 4,
     # model
     "bert_name": "sentence-transformers/bert-base-nli-mean-tokens",
@@ -28,11 +28,11 @@ Config = {
     "model_ema_decay": 0.999,
     "model_ema_force_cpu": False,
     # optimizer
-    "opt_conf": {"adam": {"lr": 5e-5, "weight_decay": 0.0}},
+    "opt_conf": {"adam": {"lr": 5e-4, "weight_decay": 0.0}},
     "sch_conf": {
         "cosine": {
             "t_initial": 20,
-            "lr_min": 5e-7,
+            "lr_min": 5e-6,
             "warmup_t": 10,
             "warmup_lr_init": 1e-6,
         }
