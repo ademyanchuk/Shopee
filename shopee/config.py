@@ -10,7 +10,7 @@ Config = {
     "target_col": "target",
     "img_size": 512,  # resize
     "crop_size": None,  # if none == img_size
-    "bs": 32,
+    "bs": 64,
     "num_workers": 4,
     # model
     "bert_name": "sentence-transformers/bert-base-nli-mean-tokens",
