@@ -241,7 +241,7 @@ def finalize_df_v1(dfs: List[pd.DataFrame]) -> Tuple[float, pd.DataFrame]:
 
     assert len(dfs) >= 2
     final_df = dfs[0]
-    unique_cols = ["best25_mean", "pred_postings", "f1"]
+    unique_cols = ["best25_mean", "pred_postings", "true_postings", "f1"]
     same_cols = [c for c in final_df.columns if c not in unique_cols]
     for df in dfs[1:]:
         final_df = pd.merge(final_df, df, on=same_cols)
@@ -257,7 +257,11 @@ def finalize_df_v1(dfs: List[pd.DataFrame]) -> Tuple[float, pd.DataFrame]:
     )
     final_df["f1_joined"] = score
     # change lists to strings before saving
-    for col in cols_to_combine + ["true_postings", "joined_pred"]:
+    for col in (
+        cols_to_combine
+        + [c for c in final_df.columns if c.startswith("true_postings")]
+        + ["joined_pred"]
+    ):
         final_df[col] = final_df[col].apply(lambda x: " ".join(x))
 
     return f1mean, final_df
