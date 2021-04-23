@@ -255,7 +255,7 @@ def finalize_df_v1(dfs: List[pd.DataFrame]) -> Tuple[float, pd.DataFrame]:
     )
     # compute and add combined score
     score, f1mean = row_wise_f1_score(
-        final_df["true_postings"], final_df["joined_pred"]
+        final_df["true_postings_x"], final_df["joined_pred"]
     )
     final_df["f1_joined"] = score
     # change lists to strings before saving
