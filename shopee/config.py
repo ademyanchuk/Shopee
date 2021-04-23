@@ -3,7 +3,7 @@ from pathlib import Path
 import yaml
 
 Config = {
-    "debug": True,
+    "debug": False,
     "seed": 42,
     # data
     "image_id_col": "image",
@@ -28,23 +28,23 @@ Config = {
     "model_ema_decay": 0.999,
     "model_ema_force_cpu": False,
     # optimizer
-    "opt_conf": {"adam": {"lr": 5e-4, "weight_decay": 0.0}},
+    "opt_conf": {"adam": {"lr": 5e-5, "weight_decay": 0.0}},
     "sch_conf": {
         "cosine": {
             "t_initial": 20,
             "lr_min": 5e-7,
-            "warmup_t": 10,
+            "warmup_t": 5,
             "warmup_lr_init": 1e-6,
         }
     },
     # loss
     "s": 30,  # arcface s scalar
-    "m": 0.25,  # arcface margin
+    "m": 0.5,  # arcface margin
     # train
     "aug_type": "albu",
     "rand_aug_severity": 5,
     "rand_aug_width": 5,
-    "num_epochs": 2,
+    "num_epochs": 20,
     "return_best": "score",
     "accum_grad": 1,
     "clip_grad": 1.0,  # norm of parameters grad
