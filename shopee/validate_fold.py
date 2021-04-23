@@ -229,7 +229,9 @@ def extract_embeedings(
     checkpoint_path = MODELS_PATH / f"{exp_name}_f{fold}_score.pth"
     epoch, _, _, _ = resume_checkpoint(model, checkpoint_path)
     assert isinstance(epoch, int)
-    _, embed, _ = validate_epoch(model, dataloaders["val"], epoch, Config, use_amp=True)
+    _, embed, _ = validate_epoch(
+        model, dataloaders["val"], epoch, Config, use_amp=True, is_bert=use_text
+    )
     return embed
 
 
