@@ -19,7 +19,7 @@ Config = {
     "pretrained": True,
     "global_pool": "catavgmax",
     "embed_size": 256,
-    "drop_rate": 0.3,
+    "drop_rate": 0.4,
     "model_kwargs": {"drop_path_rate": 0.3},
     "bn_momentum": 0.1,  # default 0.1
     "channels_last": False,
@@ -33,7 +33,7 @@ Config = {
         "cosine": {
             "t_initial": 20,
             "lr_min": 5e-7,
-            "warmup_t": 5,
+            "warmup_t": 10,
             "warmup_lr_init": 1e-6,
         }
     },
