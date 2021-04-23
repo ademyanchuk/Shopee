@@ -13,7 +13,7 @@ from shopee.moco_model import ModelMoCo
 from .checkpoint_utils import resume_checkpoint
 from .datasets import init_dataloaders, init_datasets
 from .metric import row_wise_f1_score, validate_score
-from .models import ArcFaceNet
+from .models import ArcFaceNet, init_model
 from .paths import MODELS_PATH
 from .train import validate_epoch
 
@@ -28,26 +28,23 @@ def validate_fold(
     # check if config (maybe used to train past models) has arc face text key
     try:
         use_text = Config["arc_face_text"]
+        bert_name = Config["bert_name"]
     except KeyError:
         print("Old models: set text input to False")
         use_text = False
+        bert_name = ""
 
     train_ds, val_ds = init_datasets(
-        Config, train_df, val_df, image_dir, is_moco=Config["moco"], use_text=use_text,
+        Config,
+        train_df,
+        val_df,
+        image_dir,
+        txt_mod_name_or_path=bert_name,
+        use_text=use_text,
     )
-    dataloaders = init_dataloaders(
-        train_ds, val_ds, Config, is_moco=False
-    )  # false so not to drop last
+    dataloaders = init_dataloaders(train_ds, val_ds, Config)
     num_classes = int(train_df[Config["target_col"]].max() + 1)
-
-    if Config["moco"]:
-        model = ModelMoCo(
-            dim=Config["embed_size"],
-            arch=Config["arch"],
-            global_pool=Config["global_pool"],
-        )
-    else:
-        model = ArcFaceNet(num_classes, Config, pretrained=True)
+    model = init_model(num_classes, Config, pretrained=False)
     model.cuda()
     if Config["channels_last"]:
         model = model.to(memory_format=torch.channels_last)
@@ -56,14 +53,14 @@ def validate_fold(
     assert isinstance(epoch, int)
     assert isinstance(th, float)
     _, embeds, _ = validate_epoch(
-        model, dataloaders["val"], epoch, Config, use_amp=True, is_moco=Config["moco"]
+        model, dataloaders["val"], epoch, Config, use_amp=True, is_bert=use_text,
     )
     # image predictions
     img_score, pred_df = validate_score(val_df, embeds, th)
-    logging.info(f"Image model score: {img_score} [for exp: {exp_name}, fold: {fold}]")
+    logging.info(f"DL model score: {img_score} [for exp: {exp_name}, fold: {fold}]")
     # text predictions
     text_score, text_df = validate_fold_text(val_df, Config["tfidf_args"])
-    logging.info(f"Text model score: {text_score} [for exp: {exp_name}, fold: {fold}]")
+    logging.info(f"Tfidf model score: {text_score} [for exp: {exp_name}, fold: {fold}]")
     # finalize prediction data frame
     score, pred_df = finalize_df(pred_df, text_df)
     return score, pred_df
@@ -130,16 +127,23 @@ def validate_models_fold(
         # check if config (maybe used to train past models) has arc face text key
         try:
             use_text = Config["arc_face_text"]
+            bert_name = Config["bert_name"]
         except KeyError:
             print("Old models: set text input to False")
             use_text = False
+            bert_name = ""
         train_ds, val_ds = init_datasets(
-            Config, train_df, val_df, image_dir, use_text=use_text
+            Config,
+            train_df,
+            val_df,
+            image_dir,
+            txt_mod_name_or_path=bert_name,
+            use_text=use_text,
         )
         dataloaders = init_dataloaders(train_ds, val_ds, Config)
         num_classes = int(train_df[Config["target_col"]].max() + 1)
 
-        model = ArcFaceNet(num_classes, Config, pretrained=False)
+        model = init_model(num_classes, Config, pretrained=False)
         model.cuda()
         if Config["channels_last"]:
             model = model.to(memory_format=torch.channels_last)
