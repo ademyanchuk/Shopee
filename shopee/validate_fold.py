@@ -150,45 +150,18 @@ def validate_models_fold(
 
     embeds = []
     for exp_name in exp_names:
-        Config = load_config_yaml(conf_dir, exp_name)
-        # check if config (maybe used to train past models) has arc face text key
-        try:
-            use_text = Config["arc_face_text"]
-            bert_name = Config["bert_name"]
-        except KeyError:
-            print("Old models: set text input to False")
-            use_text = False
-            bert_name = ""
-        train_ds, val_ds = init_datasets(
-            Config,
-            train_df,
-            val_df,
-            image_dir,
-            txt_mod_name_or_path=bert_name,
-            use_text=use_text,
-        )
-        dataloaders = init_dataloaders(train_ds, val_ds, Config)
-        num_classes = int(train_df[Config["target_col"]].max() + 1)
-
-        model = init_model(num_classes, Config, pretrained=False)
-        model.cuda()
-        if Config["channels_last"]:
-            model = model.to(memory_format=torch.channels_last)
-        checkpoint_path = MODELS_PATH / f"{exp_name}_f{fold}_score.pth"
-        epoch, _, _, _ = resume_checkpoint(model, checkpoint_path)
-        assert isinstance(epoch, int)
-        _, embed, _ = validate_epoch(
-            model, dataloaders["val"], epoch, Config, use_amp=True
+        embed = extract_embeedings(
+            exp_name, conf_dir, image_dir, train_df, val_df, fold
         )
         embeds.append(embed)
 
     embeds = torch.cat(embeds, dim=1)  # concat embeedings from models
     # image predictions
     img_score, pred_df = validate_score(val_df, embeds, th=None)
-    print(f"Image model score: {img_score} [for exp: {exp_names}, fold: {fold}]")
+    print(f"DL model score: {img_score} [for exp: {exp_names}, fold: {fold}]")
     # text predictions
     text_score, text_df = validate_fold_text(val_df, tfidf_args)
-    print(f"Text model score: {text_score} [for exp: {exp_names}, fold: {fold}]")
+    print(f"Tfidf model score: {text_score} [for exp: {exp_names}, fold: {fold}]")
     # finalize prediction data frame
     score, pred_df = finalize_df(pred_df, text_df)
     return score, pred_df
