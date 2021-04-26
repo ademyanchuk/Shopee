@@ -261,16 +261,11 @@ def test_batch(
     and targets tensor
     """
     inputs = batch["image"].cuda()
-    try:
-        text = batch["text"].cuda()
-    except KeyError:
-        # dataset doesn't provide text = set to None
-        text = None
     if Config["channels_last"]:
         inputs = inputs.contiguous(memory_format=torch.channels_last)
     with torch.no_grad():
         with autocast(enabled=use_amp):
-            outputs = model(inputs, text)
+            outputs = model(inputs)
     return outputs
 
 
