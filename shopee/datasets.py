@@ -241,7 +241,7 @@ def init_test_dataset(
     Config: dict,
     df: pd.DataFrame,
     image_dir: Path,
-    txt_mod_name_or_path: Union[str, Path],
+    txt_mod_name_or_path: Union[bool, str, Path],
     use_text: bool = False,
 ):
     if use_text:

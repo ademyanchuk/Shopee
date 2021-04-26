@@ -40,7 +40,7 @@ def get_image_embeds(
         except KeyError:
             print("Old models: set text input to False")
             use_text = False
-            kaggle_bert_dir = ""
+            kaggle_bert_dir = False
         test_ds = init_test_dataset(
             Config, df, image_dir, kaggle_bert_dir, use_text=use_text
         )
@@ -53,7 +53,7 @@ def get_image_embeds(
         )
         num_classes = FOLD_NUM_CLASSES[on_fold]
 
-        model = init_model(num_classes, Config, pretrained=False)
+        model = init_model(num_classes, Config, pretrained=kaggle_bert_dir)
         model.cuda()
         if Config["channels_last"]:
             model = model.to(memory_format=torch.channels_last)

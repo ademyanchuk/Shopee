@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Union
 import timm
 import torch
@@ -80,10 +81,12 @@ class ArcFaceNet(nn.Module):
 
 class ArcFaceBert(nn.Module):
     def __init__(
-        self, num_classes: int, Config: dict, pretrained: bool,
+        self, num_classes: int, Config: dict, pretrained: Union[bool, Path],
     ):
         super(ArcFaceBert, self).__init__()
         self.arch = Config["bert_name"]
+        if pretrained:
+            self.arch = pretrained
         self.backbone = AutoModel.from_pretrained(self.arch)
         num_features = self.backbone.config.hidden_size
 
@@ -121,7 +124,7 @@ class ArcFaceBert(nn.Module):
         return F.normalize(features)
 
 
-def init_model(num_classes: int, Config: dict, pretrained: bool):
+def init_model(num_classes: int, Config: dict, pretrained: Union[bool, Path]):
     # work with old and new configs
     try:
         is_bert = Config["arc_face_text"]
