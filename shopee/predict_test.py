@@ -60,7 +60,9 @@ def get_image_embeds(
         checkpoint_path = model_dir / f"{exp_name}_f{on_fold}_score.pth"
         epoch, _, _, _ = resume_checkpoint(model, checkpoint_path)
         assert isinstance(epoch, int)
-        _, img_embeds = test_epoch(model, test_dl, epoch, Config, use_amp=True)
+        _, img_embeds = test_epoch(
+            model, test_dl, epoch, Config, use_amp=True, use_text=use_text
+        )
         all_embeds.append(img_embeds)
     all_embeds = torch.cat(all_embeds, dim=1)  # concatenate
     return all_embeds
@@ -236,13 +238,16 @@ def predict_2_models(
     return df
 
 
-def test_epoch(model, dataloader, epoch, Config, use_amp):
+def test_epoch(model, dataloader, epoch, Config, use_amp, use_text=False):
     model.eval()
     epoch_logits = []
     bar = tqdm(dataloader)
+    test_batch_fn = test_batch
+    if use_text:
+        test_batch_fn = test_batch_bert
     for batch in bar:
         bar.set_description(f"Epoch {epoch} [validation]".ljust(20))
-        batch_logits = test_batch(batch, model, Config, use_amp)
+        batch_logits = test_batch_fn(batch, model, Config, use_amp)
         epoch_logits.append(batch_logits)
     # on epoch end
     return epoch_logits, torch.cat(epoch_logits)
@@ -266,4 +271,22 @@ def test_batch(
     with torch.no_grad():
         with autocast(enabled=use_amp):
             outputs = model(inputs, text)
+    return outputs
+
+
+def test_batch_bert(
+    batch, model, Config, use_amp,
+):
+    """
+    It returns also detached to cpu output tensor
+    and targets tensor
+    """
+    input_ids = batch["input_ids"].cuda()
+    attention_mask = batch["attention_mask"].cuda()
+    if Config["channels_last"]:
+        raise NotImplementedError
+    with torch.no_grad():
+        with autocast(enabled=use_amp):
+            outputs = model(input_ids, attention_mask)
+    # index into only main task classes (if aux task is used)
     return outputs
