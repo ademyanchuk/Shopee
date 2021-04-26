@@ -14,7 +14,7 @@ from shopee.metric import QUANTILES, compute_thres, get_sim_stats, get_sim_stats
 
 from .checkpoint_utils import resume_checkpoint
 from .datasets import init_test_dataset
-from .models import ArcFaceNet
+from .models import init_model
 
 FOLD_NUM_CLASSES = {0: 11014, 1: 11014, 2: 11013, 3: 11014, 4: 11014}
 
@@ -35,10 +35,15 @@ def get_image_embeds(
         # check if config (maybe used to train past models) has arc face text key
         try:
             use_text = Config["arc_face_text"]
+            bert_name = Config["bert_name"]
+            kaggle_bert_dir = Path("/kaggle/input/sbert-hf") / bert_name.split("/")[-1]
         except KeyError:
             print("Old models: set text input to False")
             use_text = False
-        test_ds = init_test_dataset(Config, df, image_dir, text=use_text)
+            kaggle_bert_dir = ""
+        test_ds = init_test_dataset(
+            Config, df, image_dir, kaggle_bert_dir, use_text=use_text
+        )
         test_dl = DataLoader(
             test_ds,
             batch_size=Config["bs"],
@@ -48,7 +53,7 @@ def get_image_embeds(
         )
         num_classes = FOLD_NUM_CLASSES[on_fold]
 
-        model = ArcFaceNet(num_classes, Config, pretrained=False)
+        model = init_model(num_classes, Config, pretrained=False)
         model.cuda()
         if Config["channels_last"]:
             model = model.to(memory_format=torch.channels_last)

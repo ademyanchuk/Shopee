@@ -238,20 +238,29 @@ def init_datasets(
 
 
 def init_test_dataset(
-    Config: dict, df: pd.DataFrame, image_dir: Path, text: bool = False
+    Config: dict,
+    df: pd.DataFrame,
+    image_dir: Path,
+    txt_mod_name_or_path: Union[str, Path],
+    use_text: bool = False,
 ):
-    test_aug = make_albu_augs(
-        img_size=Config["img_size"], crop_size=Config["crop_size"], mode="test"
-    )
-    return ShImageDataset(
-        df=df,
-        image_dir=image_dir,
-        image_id_col=Config["image_id_col"],
-        target_col="",
-        is_test=True,
-        transform=test_aug,
-        text=text,
-    )
+    if use_text:
+        # use bert dataset
+        return ShTextDataset(
+            df=df, target_col="", is_test=True, tok_name_or_path=txt_mod_name_or_path,
+        )
+    else:
+        test_aug = make_albu_augs(
+            img_size=Config["img_size"], crop_size=Config["crop_size"], mode="test"
+        )
+        return ShImageDataset(
+            df=df,
+            image_dir=image_dir,
+            image_id_col=Config["image_id_col"],
+            target_col="",
+            is_test=True,
+            transform=test_aug,
+        )
 
 
 def init_dataloaders(
