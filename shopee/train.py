@@ -68,7 +68,7 @@ def train_eval_fold(
     if Config["channels_last"]:
         model = model.to(memory_format=torch.channels_last)
 
-    optimizer = init_optimizer(model.parameters(), Config["opt_conf"])
+    optimizer = init_optimizer(model, Config["opt_conf"], diff_lr=Config["diff_lr"])
     logging.info(f"Using optimizer: {optimizer}")
     amp_scaler = NativeScaler() if use_amp else None
     logging.info(f"AMP: {amp_scaler}")
@@ -196,7 +196,7 @@ def train_model(
         val_score = np.nan
         th = np.nan
         if metrics_fn is not None:
-            print(val_logits.shape, val_logits.dtype)
+            # print(val_logits.shape, val_logits.dtype)
             val_score, th = metrics_fn(val_logits, val_targets)
         # Loging train and val results
         logging.info(f"Epoch {epoch} - avg train loss: {train_loss:.4f}")
@@ -216,6 +216,7 @@ def train_model(
         if scheduler is not None:
             scheduler.step(epoch)
             logging.info(f"epoch step: lr: {optimizer.param_groups[0]['lr']:.7f}")
+            logging.info(f"epoch step: lr: {optimizer.param_groups[1]['lr']:.7f}")
 
         # update metrics dict
         epoch_metrics["epoch"] = epoch
