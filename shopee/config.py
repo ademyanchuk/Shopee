@@ -3,14 +3,14 @@ from pathlib import Path
 import yaml
 
 Config = {
-    "debug": False,
+    "debug": True,
     "seed": 42,
     # data
     "image_id_col": "image",
     "target_col": "target",
     "img_size": 512,  # resize
     "crop_size": None,  # if none == img_size
-    "bs": 48,
+    "bs": 64,
     "num_workers": 4,
     # model
     "bert_name": "sentence-transformers/bert-base-nli-mean-tokens",
@@ -28,23 +28,24 @@ Config = {
     "model_ema_decay": 0.999,
     "model_ema_force_cpu": False,
     # optimizer
-    "opt_conf": {"adam": {"lr": 1e-2, "weight_decay": 0.0}},
+    "diff_lr": 50.0,
+    "opt_conf": {"adam": {"lr": 5e-4, "weight_decay": 0.0}},
     "sch_conf": {
         "cosine": {
-            "t_initial": 20,
-            "lr_min": 1e-5,
-            "warmup_t": 5,
+            "t_initial": 4,
+            "lr_min": 1e-6,
+            "warmup_t": 2,
             "warmup_lr_init": 1e-6,
         }
     },
     # loss
     "s": 30,  # arcface s scalar
-    "m": 0.5,  # arcface margin
+    "m": 0.4,  # arcface margin
     # train
     "aug_type": "albu",
     "rand_aug_severity": 5,
     "rand_aug_width": 5,
-    "num_epochs": 20,
+    "num_epochs": 4,
     "return_best": "score",
     "accum_grad": 1,
     "clip_grad": 1.0,  # norm of parameters grad
