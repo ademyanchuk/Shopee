@@ -69,7 +69,10 @@ def get_image_embeds(
 
 
 def compute_matches(
-    emb_tensor: torch.Tensor, df: pd.DataFrame, chunk_sz: int
+    emb_tensor: torch.Tensor,
+    df: pd.DataFrame,
+    chunk_sz: int,
+    static_th: Optional[float] = None,
 ) -> List[List[str]]:
     matches = []
     num_chunks = (len(emb_tensor) // chunk_sz) + 1
@@ -82,7 +85,7 @@ def compute_matches(
         sim = emb_tensor[a:b] @ emb_tensor.T
         stats = get_sim_stats_torch(sim)
         quants = torch.quantile(stats, q=torch.tensor(QUANTILES))
-        threshold = torch.stack([compute_thres(x, quants) for x in stats])
+        threshold = torch.stack([compute_thres(x, quants, static_th) for x in stats])
         threshold = threshold[:, None].cuda()
         selection = (sim > threshold).cpu().numpy()
         for row in selection:
@@ -103,16 +106,21 @@ def predict_img_text(
     model_dir: Path,
     conf_dir: Path,
     text_model_args: dict,
+    static_ths: tuple = (None, None),
 ):
     img_embeds = get_image_embeds(conf_dir, exp_name, df, image_dir, model_dir, on_fold)
 
-    img_matches = compute_matches(img_embeds, df, chunk_sz=1024)
+    img_matches = compute_matches(
+        img_embeds, df, chunk_sz=1024, static_th=static_ths[0]
+    )
 
     # texts
     model_txt = TfidfVectorizer(**text_model_args)
     text_embeds = model_txt.fit_transform(df["title"]).toarray().astype(np.float32)
     text_embeds = torch.from_numpy(text_embeds).cuda()
-    text_matches = compute_matches(text_embeds, df, chunk_sz=1024)
+    text_matches = compute_matches(
+        text_embeds, df, chunk_sz=1024, static_th=static_ths[1]
+    )
 
     tmp_df = pd.DataFrame({"img_matches": img_matches, "text_matches": text_matches})
 
