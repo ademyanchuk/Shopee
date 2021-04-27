@@ -4,20 +4,27 @@ import torch.optim as torch_optim
 from timm import scheduler, optim
 
 
-def init_optimizer(model_params: Any, conf_dict: Dict):
+def init_optimizer(model: nn.Module, conf_dict: Dict, diff_lr: float = 0.0):
     """
     Initialize optimizer according a `conf_dict` params
     Only one key on outter level of config dict is allowed
     """
-    if "adam" in conf_dict:
-        kwargs = conf_dict["adam"]
-        return torch_optim.AdamW(model_params, **kwargs)
-    elif "radam" in conf_dict:
-        kwargs = conf_dict["radam"]
-        return optim.RAdam(model_params, **kwargs)
-    elif "rmsproptf" in conf_dict:
-        kwargs = conf_dict["rmsproptf"]
-        return optim.RMSpropTF(model_params, **kwargs)
+    optim_key = list(conf_dict.keys())[0]
+    base_lr = conf_dict[optim_key].pop("lr")
+    head_lr = base_lr
+    if diff_lr != 0:
+        head_lr *= diff_lr
+    params = [
+        {"params": model.backbone.parameters(), "lr": base_lr},
+        {"params": model.head.parameters(), "lr": head_lr},
+        {"params": model.margin.parameters(), "lr": head_lr},
+    ]
+    if optim_key == "adam":
+        return torch_optim.AdamW(params, **conf_dict[optim_key])
+    elif optim_key == "radam":
+        return optim.RAdam(params, **conf_dict[optim_key])
+    elif optim_key == "rmsproptf":
+        return optim.RMSpropTF(params, **conf_dict[optim_key])
     else:
         raise NotImplementedError
 
