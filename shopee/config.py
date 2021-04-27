@@ -3,7 +3,7 @@ from pathlib import Path
 import yaml
 
 Config = {
-    "debug": False,
+    "debug": True,
     "seed": 42,
     # data
     "image_id_col": "image",
@@ -32,9 +32,9 @@ Config = {
     "opt_conf": {"adam": {"lr": 5e-4, "weight_decay": 0.0}},
     "sch_conf": {
         "cosine": {
-            "t_initial": 10,
+            "t_initial": 4,
             "lr_min": 1e-6,
-            "warmup_t": 3,
+            "warmup_t": 2,
             "warmup_lr_init": 1e-5,
         }
     },
@@ -45,7 +45,7 @@ Config = {
     "aug_type": "albu",
     "rand_aug_severity": 5,
     "rand_aug_width": 5,
-    "num_epochs": 10,
+    "num_epochs": 4,
     "return_best": "score",
     "accum_grad": 1,
     "clip_grad": 1.0,  # norm of parameters grad
