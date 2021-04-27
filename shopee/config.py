@@ -34,7 +34,7 @@ Config = {
         "cosine": {
             "t_initial": 10,
             "lr_min": 1e-6,
-            "warmup_t": 3,
+            "warmup_t": 2,
             "warmup_lr_init": 1e-5,
         }
     },
