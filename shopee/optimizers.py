@@ -14,13 +14,14 @@ def init_optimizer(model: nn.Module, conf_dict: Dict, diff_lr: float = 0.0):
     head_lr = base_lr
     if diff_lr != 0:
         head_lr *= diff_lr
-    head_params = [
-        model.bn1.parameters(),
-        model.dropout.parameters(),
-        model.fc1.parameters(),
-        model.bn2.parameters(),
-        model.margin.parameters(),
-    ]
+    # i know this is ugly!
+    head_params = (
+        list(model.bn1.parameters())
+        + list(model.dropout.parameters())
+        + list(model.fc1.parameters())
+        + list(model.bn2.parameters())
+        + list(model.margin.parameters())
+    )
     params = [
         {"params": model.backbone.parameters(), "lr": base_lr},
         {"params": head_params, "lr": head_lr},
