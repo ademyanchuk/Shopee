@@ -14,10 +14,16 @@ def init_optimizer(model: nn.Module, conf_dict: Dict, diff_lr: float = 0.0):
     head_lr = base_lr
     if diff_lr != 0:
         head_lr *= diff_lr
+    head_params = [
+        model.bn1.parameters(),
+        model.dropout.parameters(),
+        model.fc1.parameters(),
+        model.bn2.parameters(),
+        model.margin.parameters(),
+    ]
     params = [
         {"params": model.backbone.parameters(), "lr": base_lr},
-        {"params": model.head.parameters(), "lr": head_lr},
-        {"params": model.margin.parameters(), "lr": head_lr},
+        {"params": head_params, "lr": head_lr},
     ]
     if optim_key == "adam":
         return torch_optim.AdamW(params, **conf_dict[optim_key])
