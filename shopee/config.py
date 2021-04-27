@@ -3,7 +3,7 @@ from pathlib import Path
 import yaml
 
 Config = {
-    "debug": True,
+    "debug": False,
     "seed": 42,
     # data
     "image_id_col": "image",
