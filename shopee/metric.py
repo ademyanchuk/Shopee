@@ -102,7 +102,9 @@ def get_sim_stats_torch(sims: torch.Tensor):
     return torch.tensor(best_mean)
 
 
-def compute_thres(mean_sim, qunts, coeff=0.9):
+def compute_thres(mean_sim, qunts, static=None, coeff=0.9):
+    if static is not None:
+        return static
     if mean_sim <= qunts[0]:
         return qunts[0] * coeff
     elif mean_sim > qunts[0] and mean_sim <= qunts[1]:
