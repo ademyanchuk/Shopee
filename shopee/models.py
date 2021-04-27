@@ -56,11 +56,12 @@ class ArcFaceNet(nn.Module):
         if Config["global_pool"] == "catavgmax":
             num_features *= 2
 
-        self.bn1 = nn.BatchNorm1d(num_features)
-        self.dropout = nn.Dropout(Config["drop_rate"], inplace=True)
-        self.fc1 = nn.Linear(num_features, Config["embed_size"])
-        self.bn2 = nn.BatchNorm1d(Config["embed_size"])
-
+        self.head = nn.Sequential(
+            nn.BatchNorm1d(num_features),
+            nn.Dropout(Config["drop_rate"], inplace=True),
+            nn.Linear(num_features, Config["embed_size"]),
+            nn.BatchNorm1d(Config["embed_size"]),
+        )
         self.margin = ArcFaceLayer(
             emb_size=Config["embed_size"], output_classes=num_classes
         )
@@ -70,10 +71,7 @@ class ArcFaceNet(nn.Module):
 
     def forward(self, x):
         features = self.backbone(x)
-        features = self.bn1(features)
-        features = self.dropout(features)
-        features = self.fc1(features)
-        features = self.bn2(features)
+        features = self.head(features)
         if self.training:
             return self.margin(features)
         return F.normalize(features)
