@@ -133,4 +133,6 @@ def init_model(num_classes: int, Config: dict, pretrained: Union[bool, Path]):
     if is_bert:
         return ArcFaceBert(num_classes, Config, pretrained)
     else:
+        if not isinstance(pretrained, bool):
+            pretrained = False
         return ArcFaceNet(num_classes, Config, pretrained)
