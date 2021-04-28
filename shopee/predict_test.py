@@ -85,9 +85,10 @@ def compute_matches(
         sim = emb_tensor[a:b] @ emb_tensor.T
         stats = get_sim_stats_torch(sim)
         quants = torch.quantile(stats, q=torch.tensor(QUANTILES))
-        threshold = torch.stack(
-            [compute_thres(x, quants, torch.tensor(static_th)) for x in stats]
-        )
+        if static_th is not None:
+            static_th = torch.tensor(static_th)
+
+        threshold = torch.stack([compute_thres(x, quants, static_th) for x in stats])
         threshold = threshold[:, None].cuda()
         selection = (sim > threshold).cpu().numpy()
         for row in selection:
