@@ -38,9 +38,9 @@ def validate_models_union(
         print(f"DL model score: {score} [for exp: {exp_names}, fold: {fold}]")
         pred_dfs.append(pred_df)
 
-    # tfidf_score, text_df = validate_fold_text(val_df, tfidf_args)
-    # print(f"Tfidf model score: {tfidf_score} [for exp: {exp_names}, fold: {fold}]")
-    # pred_dfs.append(text_df)
+    tfidf_score, text_df = validate_fold_text(val_df, tfidf_args)
+    print(f"Tfidf model score: {tfidf_score} [for exp: {exp_names}, fold: {fold}]")
+    pred_dfs.append(text_df)
     # merge here and return final score and df
     return finalize_df_v1(pred_dfs)
 
