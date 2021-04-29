@@ -43,8 +43,10 @@ def train_eval_fold(
     One full train/eval loop with validation on fold `fold`
     df: should have `fold` column
     """
-    train_df = df[df["fold"] != args.fold].copy().reset_index(drop=True)
-    # validation is allways on hard labels
+    train_df = df.copy()
+    if not Config["train_on_full"]:
+        train_df = df[df["fold"] != args.fold].copy().reset_index(drop=True)
+    # validation
     val_df = df[df["fold"] == args.fold].copy().reset_index(drop=True)
 
     train_ds, val_ds = init_datasets(

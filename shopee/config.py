@@ -12,6 +12,7 @@ Config = {
     "crop_size": None,  # if none == img_size
     "bs": 64,
     "num_workers": 4,
+    "train_on_full": True,
     # model
     "bert_name": "sentence-transformers/bert-base-nli-mean-tokens",
     "arc_face_text": False,
@@ -40,7 +41,7 @@ Config = {
     },
     # loss
     "s": 30,  # arcface s scalar
-    "m": 0.6,  # arcface margin
+    "m": 0.4,  # arcface margin
     # train
     "aug_type": "albu",
     "rand_aug_severity": 5,
