@@ -29,7 +29,7 @@ Config = {
     "model_ema_force_cpu": False,
     # optimizer
     "diff_lr": 50.0,
-    "opt_conf": {"adam": {"lr": 5e-4, "weight_decay": 0.0}},
+    "opt_conf": {"adam": {"lr": 1e-3, "weight_decay": 0.0}},
     "sch_conf": {
         "cosine": {
             "t_initial": 15,
@@ -40,7 +40,7 @@ Config = {
     },
     # loss
     "s": 30,  # arcface s scalar
-    "m": 0.4,  # arcface margin
+    "m": 0.6,  # arcface margin
     # train
     "aug_type": "albu",
     "rand_aug_severity": 5,
