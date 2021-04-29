@@ -29,7 +29,7 @@ Config = {
     "model_ema_force_cpu": False,
     # optimizer
     "diff_lr": 50.0,
-    "opt_conf": {"adam": {"lr": 1e-3, "weight_decay": 0.0}},
+    "opt_conf": {"adam": {"lr": 5e-4, "weight_decay": 0.0}},
     "sch_conf": {
         "cosine": {
             "t_initial": 15,
