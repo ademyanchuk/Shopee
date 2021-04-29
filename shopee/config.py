@@ -15,7 +15,7 @@ Config = {
     # model
     "bert_name": "sentence-transformers/bert-base-nli-mean-tokens",
     "arc_face_text": False,
-    "arch": "tf_efficientnet_b0_ns",
+    "arch": "eca_nfnet_l0",
     "pretrained": True,
     "global_pool": "catavgmax",
     "embed_size": 256,
