@@ -107,13 +107,13 @@ def compute_thres(mean_sim, qunts, static=None, coeff=0.9):
         return static
     # worst similarity bin
     if mean_sim <= qunts[0]:
-        return qunts[0] * 0.95
+        return qunts[0] * 0.99
     # middle bin
     elif mean_sim > qunts[0] and mean_sim <= qunts[1]:
-        return qunts[1] * 0.9
+        return qunts[1] * 0.95
     # best similarity bin
     else:
-        return qunts[2] * 0.85
+        return qunts[2] * 0.9
 
 
 def validate_score(df, embeeds, th, chunk_sz=0):
