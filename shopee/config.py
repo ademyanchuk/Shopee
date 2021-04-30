@@ -16,12 +16,12 @@ Config = {
     # model
     "bert_name": "sentence-transformers/bert-base-nli-mean-tokens",
     "arc_face_text": False,
-    "arch": "eca_nfnet_l0",
+    "arch": "tf_efficientnet_b0_ns",
     "pretrained": True,
     "global_pool": "catavgmax",
     "embed_size": 256,
     "drop_rate": 0.4,
-    "model_kwargs": {"drop_path_rate": 0.3},
+    "model_kwargs": {"drop_path_rate": 0.2},
     "bn_momentum": 0.1,  # default 0.1
     "channels_last": False,
     # ema
@@ -41,7 +41,7 @@ Config = {
     },
     # loss
     "s": 30,  # arcface s scalar
-    "m": 0.4,  # arcface margin
+    "m": 0.5,  # arcface margin
     # train
     "aug_type": "albu",
     "rand_aug_severity": 5,
