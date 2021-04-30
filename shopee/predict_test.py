@@ -121,7 +121,7 @@ def predict_img_text(
         df,
         chunk_sz=1024,
         static_th=static_ths[0],
-        coeff=torch.tensor([0.975, 0.95, 0.9]),
+        coeff=torch.tensor([0.99, 0.95, 0.9]),
     )
 
     # texts
@@ -133,7 +133,7 @@ def predict_img_text(
         df,
         chunk_sz=1024,
         static_th=static_ths[1],
-        coeff=torch.tensor([0.925, 0.9, 0.875]),
+        coeff=torch.tensor([0.99, 0.95, 0.9]),
     )
 
     tmp_df = pd.DataFrame({"img_matches": img_matches, "text_matches": text_matches})
