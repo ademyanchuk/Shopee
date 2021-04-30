@@ -10,13 +10,13 @@ Config = {
     "target_col": "target",
     "img_size": 512,  # resize
     "crop_size": None,  # if none == img_size
-    "bs": 64,
+    "bs": 32,
     "num_workers": 4,
     "train_on_full": True,
     # model
     "bert_name": "sentence-transformers/bert-base-nli-mean-tokens",
     "arc_face_text": False,
-    "arch": "tf_efficientnet_b0_ns",
+    "arch": "tf_efficientnet_b1_ns",
     "pretrained": True,
     "global_pool": "catavgmax",
     "embed_size": 256,
