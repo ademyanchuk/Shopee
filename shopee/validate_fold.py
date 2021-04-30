@@ -98,7 +98,7 @@ def validate_fold_text(df: pd.DataFrame, txt_model_args: dict):
     model = TfidfVectorizer(**txt_model_args)
     text_embeds = model.fit_transform(df["title"]).toarray()
     text_embeds = torch.from_numpy(text_embeds)
-    score, pred_df = validate_score(df, text_embeds, th=None)
+    score, pred_df = validate_score(df, text_embeds, th=None, coeff=(0.925, 0.9, 0.875))
     return score, pred_df
 
 
@@ -157,7 +157,7 @@ def validate_models_fold(
 
     embeds = torch.cat(embeds, dim=1)  # concat embeedings from models
     # image predictions
-    img_score, pred_df = validate_score(val_df, embeds, th=None)
+    img_score, pred_df = validate_score(val_df, embeds, th=None, coeff=(0.975, 0.95, 0.9))
     print(f"DL model score: {img_score} [for exp: {exp_names}, fold: {fold}]")
     # text predictions
     text_score, text_df = validate_fold_text(val_df, tfidf_args)

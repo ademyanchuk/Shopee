@@ -102,28 +102,30 @@ def get_sim_stats_torch(sims: torch.Tensor):
     return torch.tensor(best_mean)
 
 
-def compute_thres(mean_sim, qunts, static=None, coeff=0.9):
+def compute_thres(mean_sim, qunts, static=None, coeff=(0.9, 0.9, 0.9)):
     if static is not None:
         return static
     # worst similarity bin
     if mean_sim <= qunts[0]:
-        return qunts[0] * 0.99
+        return qunts[0] * coeff[0]
     # middle bin
     elif mean_sim > qunts[0] and mean_sim <= qunts[1]:
-        return qunts[1] * 0.95
+        return qunts[1] * coeff[1]
     # best similarity bin
     else:
-        return qunts[2] * 0.9
+        return qunts[2] * coeff[2]
 
 
-def validate_score(df, embeeds, th, chunk_sz=0):
+def validate_score(df, embeeds, th, chunk_sz=0, coeff=(0.9, 0.9, 0.9)):
     sims = emb_sim(embeeds, chunk_sz)
     sims = sims.cpu().numpy()
     # add some similarity scores statistics before thresholding
     best25_mean = get_sim_stats(sims)
     df["best25_mean"] = best25_mean
     qunts = np.quantile(df.best25_mean, q=QUANTILES)
-    th = df.apply(lambda x: compute_thres(x["best25_mean"], qunts), axis=1,)
+    th = df.apply(
+        lambda x: compute_thres(x["best25_mean"], qunts, coeff=coeff), axis=1,
+    )
     th = th.values[:, None]
     sims = sims > th
     add_ground_truth(df)
