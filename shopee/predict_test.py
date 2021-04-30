@@ -73,6 +73,7 @@ def compute_matches(
     df: pd.DataFrame,
     chunk_sz: int,
     static_th: Optional[float] = None,
+    coeff: torch.Tensor = torch.tensor([0.9, 0.9, 0.9]),
 ) -> List[List[str]]:
     matches = []
     num_chunks = (len(emb_tensor) // chunk_sz) + 1
@@ -88,7 +89,9 @@ def compute_matches(
         if static_th is not None:
             static_th = torch.tensor(static_th)
 
-        threshold = torch.stack([compute_thres(x, quants, static_th) for x in stats])
+        threshold = torch.stack(
+            [compute_thres(x, quants, static_th, coeff) for x in stats]
+        )
         threshold = threshold[:, None].cuda()
         selection = (sim > threshold).cpu().numpy()
         for row in selection:
@@ -114,7 +117,11 @@ def predict_img_text(
     img_embeds = get_image_embeds(conf_dir, exp_name, df, image_dir, model_dir, on_fold)
 
     img_matches = compute_matches(
-        img_embeds, df, chunk_sz=1024, static_th=static_ths[0]
+        img_embeds,
+        df,
+        chunk_sz=1024,
+        static_th=static_ths[0],
+        coeff=torch.tensor([0.975, 0.95, 0.9]),
     )
 
     # texts
@@ -122,7 +129,11 @@ def predict_img_text(
     text_embeds = model_txt.fit_transform(df["title"]).toarray().astype(np.float32)
     text_embeds = torch.from_numpy(text_embeds).cuda()
     text_matches = compute_matches(
-        text_embeds, df, chunk_sz=1024, static_th=static_ths[1]
+        text_embeds,
+        df,
+        chunk_sz=1024,
+        static_th=static_ths[1],
+        coeff=torch.tensor([0.925, 0.9, 0.875]),
     )
 
     tmp_df = pd.DataFrame({"img_matches": img_matches, "text_matches": text_matches})
