@@ -105,12 +105,15 @@ def get_sim_stats_torch(sims: torch.Tensor):
 def compute_thres(mean_sim, qunts, static=None, coeff=0.9):
     if static is not None:
         return static
+    # worst similarity bin
     if mean_sim <= qunts[0]:
-        return qunts[0] * coeff
+        return qunts[0] * 0.95
+    # middle bin
     elif mean_sim > qunts[0] and mean_sim <= qunts[1]:
-        return qunts[1] * coeff
+        return qunts[1] * 0.9
+    # best similarity bin
     else:
-        return qunts[2] * coeff
+        return qunts[2] * 0.85
 
 
 def validate_score(df, embeeds, th, chunk_sz=0):
