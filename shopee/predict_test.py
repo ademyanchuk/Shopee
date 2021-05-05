@@ -105,7 +105,7 @@ def combine_predictions(row):
 
 
 def predict_img_text(
-    exp_name: List[str],
+    exp_name: Union[str, List[str]],
     on_fold: int,
     df: pd.DataFrame,
     image_dir: Path,
@@ -114,9 +114,7 @@ def predict_img_text(
     text_model_args: dict,
     static_ths: tuple = (None, None),
 ):
-    img_embeds = get_image_embeds(
-        conf_dir, exp_name[:-1], df, image_dir, model_dir, on_fold
-    )
+    img_embeds = get_image_embeds(conf_dir, exp_name, df, image_dir, model_dir, on_fold)
 
     img_matches = compute_matches(
         img_embeds,
@@ -126,10 +124,10 @@ def predict_img_text(
         coeff=torch.tensor([0.99, 0.95, 0.9]),
     )
 
-    # texts it is hack to use bert model instead of tfidf here (bert should be last)
-    text_embeds = get_image_embeds(
-        conf_dir, exp_name[:1], df, image_dir, model_dir, on_fold
-    )
+    # texts
+    model_txt = TfidfVectorizer(**text_model_args)
+    text_embeds = model_txt.fit_transform(df["title"]).toarray().astype(np.float32)
+    text_embeds = torch.from_numpy(text_embeds).cuda()
     text_matches = compute_matches(
         text_embeds,
         df,
