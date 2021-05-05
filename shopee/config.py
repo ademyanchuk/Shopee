@@ -8,15 +8,15 @@ Config = {
     # data
     "image_id_col": "image",
     "target_col": "target",
-    "img_size": 512,  # resize
+    "img_size": 384,  # resize
     "crop_size": None,  # if none == img_size
-    "bs": 32,
+    "bs": 64,
     "num_workers": 4,
-    "train_on_full": True,
+    "train_on_full": False,
     # model
     "bert_name": "sentence-transformers/bert-base-nli-mean-tokens",
     "arc_face_text": False,
-    "arch": "tf_efficientnet_b1_ns",
+    "arch": "eca_nfnet_l1",
     "pretrained": True,
     "global_pool": "catavgmax",
     "embed_size": 256,
