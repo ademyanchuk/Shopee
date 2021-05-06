@@ -104,7 +104,7 @@ def validate_fold_text(
 ):
     model = TfidfVectorizer(**txt_model_args)
     text_embeds = model.fit_transform(val_df["title"]).toarray()
-    text_embeds = torch.from_numpy(text_embeds)
+    text_embeds = torch.from_numpy(text_embeds).cuda()
     bert_embeds = extract_embeedings(
         exp_name, conf_dir, image_dir, train_df, val_df, fold
     )
