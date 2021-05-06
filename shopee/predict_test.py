@@ -114,7 +114,9 @@ def predict_img_text(
     text_model_args: dict,
     static_ths: tuple = (None, None),
 ):
-    img_embeds = get_image_embeds(conf_dir, exp_name, df, image_dir, model_dir, on_fold)
+    img_embeds = get_image_embeds(
+        conf_dir, exp_name[:-1], df, image_dir, model_dir, on_fold
+    )
 
     img_matches = compute_matches(
         img_embeds,
@@ -128,6 +130,12 @@ def predict_img_text(
     model_txt = TfidfVectorizer(**text_model_args)
     text_embeds = model_txt.fit_transform(df["title"]).toarray().astype(np.float32)
     text_embeds = torch.from_numpy(text_embeds).cuda()
+
+    bert_embeds = get_image_embeds(
+        conf_dir, exp_name[-1], df, image_dir, model_dir, on_fold
+    )
+    text_embeds = torch.cat([text_embeds, bert_embeds], dim=1)
+
     text_matches = compute_matches(
         text_embeds,
         df,
