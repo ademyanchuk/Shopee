@@ -6,6 +6,7 @@ import pandas as pd
 import torch
 from sklearn.feature_extraction.text import TfidfVectorizer
 from torch.cuda.amp import autocast
+from torch.nn import functional as F
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
@@ -75,6 +76,8 @@ def compute_matches(
     static_th: Optional[float] = None,
     coeff: torch.Tensor = torch.tensor([0.9, 0.9, 0.9]),
 ) -> List[List[str]]:
+    # normalize
+    emb_tensor = F.normalize(emb_tensor)
     matches = []
     num_chunks = (len(emb_tensor) // chunk_sz) + 1
 
@@ -115,7 +118,7 @@ def predict_img_text(
     static_ths: tuple = (None, None),
 ):
     img_embeds = get_image_embeds(
-        conf_dir, exp_name[:-1], df, image_dir, model_dir, on_fold
+        conf_dir, exp_name, df, image_dir, model_dir, on_fold
     )
 
     img_matches = compute_matches(
@@ -131,10 +134,10 @@ def predict_img_text(
     text_embeds = model_txt.fit_transform(df["title"]).toarray().astype(np.float32)
     text_embeds = torch.from_numpy(text_embeds).cuda()
 
-    bert_embeds = get_image_embeds(
-        conf_dir, exp_name[-1], df, image_dir, model_dir, on_fold
-    )
-    text_embeds = torch.cat([text_embeds, bert_embeds], dim=1)
+    # bert_embeds = get_image_embeds(
+    #     conf_dir, exp_name[-1], df, image_dir, model_dir, on_fold
+    # )
+    # text_embeds = torch.cat([text_embeds, bert_embeds], dim=1)
 
     text_matches = compute_matches(
         text_embeds,
