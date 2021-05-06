@@ -93,12 +93,25 @@ def validate_fold(
     return score, pred_df
 
 
-def validate_fold_text(df: pd.DataFrame, txt_model_args: dict):
-    df = df.copy()
+def validate_fold_text(
+    train_df: pd.DataFrame,
+    val_df: pd.DataFrame,
+    txt_model_args: dict,
+    exp_name: str,
+    conf_dir: Path,
+    image_dir: Path,
+    fold: int,
+):
     model = TfidfVectorizer(**txt_model_args)
-    text_embeds = model.fit_transform(df["title"]).toarray()
+    text_embeds = model.fit_transform(val_df["title"]).toarray()
     text_embeds = torch.from_numpy(text_embeds)
-    score, pred_df = validate_score(df, text_embeds, th=None, coeff=(0.99, 0.95, 0.9))
+    bert_embeds = extract_embeedings(
+        exp_name, conf_dir, image_dir, train_df, val_df, fold
+    )
+    text_embeds = torch.cat([text_embeds, bert_embeds], dim=1)
+    score, pred_df = validate_score(
+        val_df, text_embeds, th=None, coeff=(0.99, 0.95, 0.9)
+    )
     return score, pred_df
 
 
@@ -149,7 +162,7 @@ def validate_models_fold(
     val_df = df[df["fold"] == fold].copy().reset_index(drop=True)
 
     embeds = []
-    for exp_name in exp_names:
+    for exp_name in exp_names[:-1]:
         embed = extract_embeedings(
             exp_name, conf_dir, image_dir, train_df, val_df, fold
         )
@@ -157,10 +170,14 @@ def validate_models_fold(
 
     embeds = torch.cat(embeds, dim=1)  # concat embeedings from models
     # image predictions
-    img_score, pred_df = validate_score(val_df, embeds, th=None, coeff=(0.99, 0.95, 0.9))
+    img_score, pred_df = validate_score(
+        val_df, embeds, th=None, coeff=(0.99, 0.95, 0.9)
+    )
     print(f"DL model score: {img_score} [for exp: {exp_names}, fold: {fold}]")
     # text predictions
-    text_score, text_df = validate_fold_text(val_df, tfidf_args)
+    text_score, text_df = validate_fold_text(
+        train_df, val_df, tfidf_args, exp_names[-1], conf_dir, image_dir, fold
+    )
     print(f"Tfidf model score: {text_score} [for exp: {exp_names}, fold: {fold}]")
     # finalize prediction data frame
     score, pred_df = finalize_df(pred_df, text_df)
