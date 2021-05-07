@@ -110,7 +110,7 @@ def validate_fold_text(
     )
     text_embeds = torch.cat([text_embeds, bert_embeds], dim=1)
     score, pred_df = validate_score(
-        val_df, text_embeds, th=None, coeff=(0.99, 0.95, 0.9)
+        val_df, text_embeds, th=None, coeff=(0.9, 0.85, 0.8)
     )
     return score, pred_df
 
@@ -171,14 +171,14 @@ def validate_models_fold(
     embeds = torch.cat(embeds, dim=1)  # concat embeedings from models
     # image predictions
     img_score, pred_df = validate_score(
-        val_df, embeds, th=None, coeff=(0.99, 0.95, 0.9)
+        val_df, embeds, th=None, coeff=(0.9, 0.85, 0.8)
     )
     print(f"DL model score: {img_score} [for exp: {exp_names}, fold: {fold}]")
     # text predictions
     text_score, text_df = validate_fold_text(
         train_df, val_df, tfidf_args, exp_names[-1], conf_dir, image_dir, fold
     )
-    print(f"Tfidf model score: {text_score} [for exp: {exp_names}, fold: {fold}]")
+    print(f"Text model score: {text_score} [for exp: {exp_names}, fold: {fold}]")
     # finalize prediction data frame
     score, pred_df = finalize_df(pred_df, text_df)
     return score, pred_df
