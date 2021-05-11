@@ -97,11 +97,13 @@ def compute_matches(
         )
         threshold = threshold[:, None].cuda()
         selection = (sim > threshold).cpu().numpy()
+
         best_2 = torch.argsort(sim)[:, -2:].cpu().numpy()
         sim = sim.cpu().numpy()
+        threshold = threshold.cpu().numpy()
         for i, (sel, b2) in enumerate(zip(selection, best_2)):
             row = sel
-            if sel.sum() < 2 and sim[i, b2[0]] - sim[i, b2[1]] < 0.05:
+            if sel.sum() < 2 and sim[i, b2[1]] >= threshold[i] * 0.95:
                 row = b2
             matches.append(df.iloc[row].posting_id.tolist())
     return matches
