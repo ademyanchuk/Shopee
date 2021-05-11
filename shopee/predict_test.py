@@ -97,8 +97,8 @@ def compute_matches(
         )
         threshold = threshold[:, None].cuda()
         selection = (sim > threshold).cpu().numpy()
-        best_2 = torch.argsort(sim)[:, -2:].cpu().numpy()
-        for sel, b2 in zip(selection, best_2):
+        best_3 = torch.argsort(sim)[:, -3:].cpu().numpy()
+        for sel, b2 in zip(selection, best_3):
             row = sel
             if len(sel) < 2:
                 row = b2
