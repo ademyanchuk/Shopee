@@ -117,6 +117,7 @@ def compute_thres(mean_sim, qunts, static=None, coeff=(0.9, 0.9, 0.9)):
 
 
 def validate_score(df, embeeds, th, chunk_sz=0, coeff=(0.9, 0.9, 0.9)):
+    df = df.copy()
     sims = emb_sim(embeeds, chunk_sz)
     sims = sims.cpu().numpy()
     # add some similarity scores statistics before thresholding
