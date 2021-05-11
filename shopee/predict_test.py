@@ -100,7 +100,7 @@ def compute_matches(
         best_3 = torch.argsort(sim)[:, -3:].cpu().numpy()
         for sel, b2 in zip(selection, best_3):
             row = sel
-            if len(sel) < 2:
+            if sel.sum() < 2:
                 row = b2
             matches.append(df.iloc[row].posting_id.tolist())
     return matches
