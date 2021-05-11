@@ -101,7 +101,7 @@ def compute_matches(
         sim = sim.cpu().numpy()
         for i, (sel, b2) in enumerate(zip(selection, best_2)):
             row = sel
-            if sel.sum() < 2 and sim[i, b2[0]] - sim[i, b2[1]] < 0.1:
+            if sel.sum() < 2 and sim[i, b2[0]] - sim[i, b2[1]] < 0.05:
                 row = b2
             matches.append(df.iloc[row].posting_id.tolist())
     return matches
