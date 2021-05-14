@@ -136,7 +136,7 @@ def compute_matches_v2(
         i_ids_best = best_ids[i, :2]
         for j in range(2, 50):
             row_ids = best_ids[i, :j]
-            num_common = len(reduce(np.intersect1d, [best_ids[z] for z in row_ids]))
+            num_common = len(reduce(np.intersect1d, [best_ids[z] for z in row_ids])) * np.log(j)
             if num_common > num_common_best:
                 num_common_best = num_common
                 i_ids_best = row_ids
