@@ -39,6 +39,9 @@ def get_image_embeds(
             use_text = Config["arc_face_text"]
             bert_name = Config["bert_name"]
             kaggle_bert_dir = Path("/kaggle/input/sbert-hf") / bert_name.split("/")[-1]
+            # fast hack
+            if not kaggle_bert_dir.exists():
+                kaggle_bert_dir = bert_name
         except KeyError:
             print("Old models: set text input to False")
             use_text = False
