@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import List, Optional, Union
+from functools import reduce
 
 import numpy as np
 import pandas as pd
@@ -106,6 +107,40 @@ def compute_matches(
             if sel.sum() < 2 and sim[i, b2[1]] >= 0.5:
                 row = b2
             matches.append(df.iloc[row].posting_id.tolist())
+    return matches
+
+def compute_matches_v2(
+    emb_tensor: torch.Tensor,
+    df: pd.DataFrame,
+    chunk_sz: int,
+    static_th: Optional[float] = None,
+    coeff: torch.Tensor = torch.tensor([0.9, 0.9, 0.9]),
+) -> List[List[str]]:
+    # normalize
+    # emb_tensor = F.normalize(emb_tensor)
+    matches = []
+    best_ids = []
+    num_chunks = (len(emb_tensor) // chunk_sz) + 1
+
+    for i in range(num_chunks):
+        a = i * chunk_sz
+        b = (i + 1) * chunk_sz
+        b = min(b, len(emb_tensor))
+        print(f"compute similarities for chunks {a} to {b}")
+        sim = emb_tensor[a:b] @ emb_tensor.T
+
+        best_ids.append(torch.argsort(sim)[:, -50:].cpu().numpy())
+    best_ids = np.concatenate(best_ids)
+    for i in range(best_ids.shape[0]):
+        num_common_best = 1
+        i_ids_best = best_ids[i, :2]
+        for j in range(2, 50):
+            row_ids = best_ids[i, :j]
+            num_common = len(reduce(np.intersect1d, [best_ids[z] for z in row_ids]))
+            if num_common > num_common_best:
+                num_common_best = num_common
+                i_ids_best = row_ids
+        matches.append(df.iloc[i_ids_best].posting_id.tolist())
     return matches
 
 
