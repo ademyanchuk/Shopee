@@ -167,7 +167,7 @@ def predict_img_text(
         static_th=0.65,
         coeff=torch.tensor([0.99, 0.95, 0.9]),
     )
-    tmp_df = pd.DataFrame({"img_matches": df["matches"].copy(), "text_matches": comb_matches})
+    tmp_df = pd.DataFrame({"img_matches": df["matches"].copy().str.split(" "), "text_matches": comb_matches})
     
     df["matches"] = tmp_df.apply(combine_predictions, axis=1)
     return df
