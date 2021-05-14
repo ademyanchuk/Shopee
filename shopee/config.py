@@ -8,9 +8,9 @@ Config = {
     # data
     "image_id_col": "image",
     "target_col": "target",
-    "img_size": 384,  # resize
+    "img_size": 512,  # resize
     "crop_size": None,  # if none == img_size
-    "bs": 64,
+    "bs": 32,
     "num_workers": 4,
     "train_on_full": False,
     # model
@@ -19,7 +19,7 @@ Config = {
     "arch": "eca_nfnet_l1",
     "pretrained": True,
     "global_pool": "catavgmax",
-    "embed_size": 256,
+    "embed_size": 1024,
     "drop_rate": 0.4,
     "model_kwargs": {"drop_path_rate": 0.2},
     "bn_momentum": 0.1,  # default 0.1
@@ -35,13 +35,13 @@ Config = {
         "cosine": {
             "t_initial": 15,
             "lr_min": 1e-6,
-            "warmup_t": 3,
+            "warmup_t": 2,
             "warmup_lr_init": 1e-5,
         }
     },
     # loss
     "s": 30,  # arcface s scalar
-    "m": 0.5,  # arcface margin
+    "m": 0.9,  # arcface margin
     # train
     "aug_type": "albu",
     "rand_aug_severity": 5,
