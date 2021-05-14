@@ -163,7 +163,7 @@ def predict_img_text(
         conf_dir, exp_name[:-1], df, image_dir, model_dir, on_fold
     )
 
-    img_matches = compute_matches(
+    img_matches = compute_matches_v2(
         img_embeds,
         df,
         chunk_sz=1024,
@@ -181,7 +181,7 @@ def predict_img_text(
     )
     text_embeds = torch.cat([text_embeds, bert_embeds], dim=1)
 
-    text_matches = compute_matches(
+    text_matches = compute_matches_v2(
         text_embeds,
         df,
         chunk_sz=1024,
