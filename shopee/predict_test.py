@@ -99,7 +99,7 @@ def compute_matches(
         threshold = threshold[:, None].cuda()
         selection = (sim > threshold).cpu().numpy()
 
-        best_2 = torch.argsort(sim)[:, -2:].cpu().numpy()
+        best_2 = torch.argsort(sim, descending=True)[:, :2].cpu().numpy()
         sim = sim.cpu().numpy()
         threshold = threshold.cpu().numpy()
         for i, (sel, b2) in enumerate(zip(selection, best_2)):
@@ -129,7 +129,7 @@ def compute_matches_v2(
         print(f"compute similarities for chunks {a} to {b}")
         sim = emb_tensor[a:b] @ emb_tensor.T
 
-        best_ids.append(torch.argsort(sim)[:, -50:].cpu().numpy())
+        best_ids.append(torch.argsort(sim, descending=True)[:, :50].cpu().numpy())
     best_ids = np.concatenate(best_ids)
     for i in range(best_ids.shape[0]):
         num_common_best = 1
