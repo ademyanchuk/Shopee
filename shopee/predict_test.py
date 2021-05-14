@@ -103,7 +103,7 @@ def compute_matches(
         threshold = threshold.cpu().numpy()
         for i, (sel, b2) in enumerate(zip(selection, best_2)):
             row = sel
-            if sel.sum() < 2 and sim[i, b2[1]] >= threshold[i] * 0.95:
+            if sel.sum() < 2 and sim[i, b2[1]] >= threshold[i]:
                 row = b2
             matches.append(df.iloc[row].posting_id.tolist())
     return matches
@@ -137,14 +137,14 @@ def predict_img_text(
     )
 
     # texts
-    model_txt = TfidfVectorizer(**text_model_args)
-    text_embeds = model_txt.fit_transform(df["title"]).toarray().astype(np.float32)
-    text_embeds = torch.from_numpy(text_embeds).cuda()
+    # model_txt = TfidfVectorizer(**text_model_args)
+    # text_embeds = model_txt.fit_transform(df["title"]).toarray().astype(np.float32)
+    # text_embeds = torch.from_numpy(text_embeds).cuda()
 
-    bert_embeds = get_image_embeds(
+    text_embeds = get_image_embeds(
         conf_dir, exp_name[-1], df, image_dir, model_dir, on_fold
     )
-    text_embeds = torch.cat([text_embeds, bert_embeds], dim=1)
+    # text_embeds = torch.cat([text_embeds, bert_embeds], dim=1)
 
     text_matches = compute_matches(
         text_embeds,
@@ -156,6 +156,19 @@ def predict_img_text(
 
     tmp_df = pd.DataFrame({"img_matches": img_matches, "text_matches": text_matches})
 
+    df["matches"] = tmp_df.apply(combine_predictions, axis=1)
+
+    comb_embeds = torch.cat([img_embeds, text_embeds], dim=1)
+    
+    comb_matches = compute_matches(
+        comb_embeds,
+        df,
+        chunk_sz=1024,
+        static_th=0.65,
+        coeff=torch.tensor([0.99, 0.95, 0.9]),
+    )
+    tmp_df = pd.DataFrame({"img_matches": df["matches"].copy(), "text_matches": comb_matches})
+    
     df["matches"] = tmp_df.apply(combine_predictions, axis=1)
     return df
 
