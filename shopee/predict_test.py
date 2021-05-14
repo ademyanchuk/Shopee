@@ -77,7 +77,7 @@ def compute_matches(
     coeff: torch.Tensor = torch.tensor([0.9, 0.9, 0.9]),
 ) -> List[List[str]]:
     # normalize
-    emb_tensor = F.normalize(emb_tensor)
+    # emb_tensor = F.normalize(emb_tensor)
     matches = []
     num_chunks = (len(emb_tensor) // chunk_sz) + 1
 
@@ -103,7 +103,7 @@ def compute_matches(
         threshold = threshold.cpu().numpy()
         for i, (sel, b2) in enumerate(zip(selection, best_2)):
             row = sel
-            if sel.sum() < 2 and sim[i, b2[1]] >= threshold[i]:
+            if sel.sum() < 2 and sim[i, b2[1]] >= 0.5:
                 row = b2
             matches.append(df.iloc[row].posting_id.tolist())
     return matches
@@ -164,7 +164,7 @@ def predict_img_text(
         comb_embeds,
         df,
         chunk_sz=1024,
-        static_th=0.65,
+        static_th=0.999,
         coeff=torch.tensor([0.99, 0.95, 0.9]),
     )
     tmp_df = pd.DataFrame({"img_matches": df["matches"].copy().str.split(" "), "text_matches": comb_matches})
